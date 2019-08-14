@@ -81,24 +81,32 @@ EwayPayment.prototype = {
     },
 
     saveReviewWithEncryption: function() {
-        if (checkout.loadWaiting!=false) return;
-        checkout.setLoadWaiting('review');
-        //var params = Form.serialize(payment.form);
-        var params = payment.ewayForm.serialize();
-        if (this.agreementsForm) {
-            params += '&'+Form.serialize(this.agreementsForm);
-        }
-        params.save = true;
-        var request = new Ajax.Request(
-            this.saveUrl,
-            {
-                method:'post',
-                parameters:params,
-                onComplete: this.onComplete,
-                onSuccess: this.onSave,
-                onFailure: checkout.ajaxFailure.bind(checkout)
+        if (EwayPayment.isEwayRapidMethod(payment.currentMethod)) {
+            if (checkout.loadWaiting!=false) return;
+            checkout.setLoadWaiting('review');
+            //var params = Form.serialize(payment.form);
+            var params = payment.ewayForm.serialize();
+            if (this.agreementsForm) {
+                params += '&'+Form.serialize(this.agreementsForm);
             }
-        );
+            params.save = true;
+            var request = new Ajax.Request(
+                this.saveUrl,
+                {
+                    method:'post',
+                    parameters:params,
+                    onComplete: this.onComplete,
+                    onSuccess: this.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout)
+                }
+            );
+        } else {
+            ewayPayment.saveUrl = review.saveUrl;
+            ewayPayment.onComplete = review.onComplete;
+            ewayPayment.onSave = review.onSave;
+            ewayPayment.agreementsForm = review.agreementsForm;
+            ewayPayment.ewaysavedOldOrder();
+        }
     },
 
     saveReviewWithEncryptionTrans: function () {
@@ -1233,9 +1241,9 @@ Validation.creditCartTypes = $H(
 
     'SO': [new RegExp('^(6334[5-9]([0-9]{11}|[0-9]{13,14}))|(6767([0-9]{12}|[0-9]{14,15}))$'), new RegExp('^([0-9]{3}|[0-9]{4})?$'), true],
     'VI': [new RegExp('^4[0-9]{12}([0-9]{3})?$'), new RegExp('^[0-9]{3}$'), true],
-    'MC': [new RegExp('^5[1-5][0-9]{14}$'), new RegExp('^[0-9]{3}$'), true],
+    //'MC': [new RegExp('^5[1-5][0-9]{14}$'), new RegExp('^[0-9]{3}$'), true],
     // For 2017 - new MasterCard Range 2221-2720
-    //'MC': [new RegExp('(^5[1-5][0-9]{14}$)|(^2221[0-9]{12}$)|(^222[2-9][0-9]{12}$)|(^22[3-9][0-9]{13}$)|(^2[3-6][0-9]{14}$)|(^2720[0-9]{12}$)|(^27[0-1][0-9]{13}$)'), new RegExp('^[0-9]{3}$'), true],
+    'MC': [new RegExp('(^5[1-5][0-9]{14}$)|(^2221[0-9]{12}$)|(^222[2-9][0-9]{12}$)|(^22[3-9][0-9]{13}$)|(^2[3-6][0-9]{14}$)|(^2720[0-9]{12}$)|(^27[0-1][0-9]{13}$)'), new RegExp('^[0-9]{3}$'), true],
     'AE': [new RegExp('^3[47][0-9]{13}$'), new RegExp('^[0-9]{4}$'), true],
     'DI': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3}$'), true],
     'JCB': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3,4}$'), true],

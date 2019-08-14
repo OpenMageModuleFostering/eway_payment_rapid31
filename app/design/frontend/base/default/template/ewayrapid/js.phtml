@@ -80,6 +80,11 @@
         <?php break; ?>
         <?php default: // Magento default one page checkout ?>
         var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
+        
+        if (typeof (ewayPayment.ewaysavedOldOrder) == "undefined") {
+            ewayPayment.ewaysavedOldOrder = Review.prototype.save;
+        }
+        
         Payment.prototype.save = ewayPayment.savePaymentWithEncryption;
         Review.prototype.save = ewayPayment.saveReviewWithEncryption;
         

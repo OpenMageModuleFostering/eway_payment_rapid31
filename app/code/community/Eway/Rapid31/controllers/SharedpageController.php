@@ -45,6 +45,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $data = $this->_checkout->createAccessCode(Mage::getUrl('*/*/return', array('_secure'=>true)), Mage::getUrl('*/*/cancel', array('_secure'=>true)));
             if ($data->isSuccess()) {
                 Mage::getSingleton('core/session')->setData('FormActionURL', $data->getFormActionURL());
+                Mage::getSingleton('core/session')->setData('AccessCode', $data['AccessCode']);
                 if ($data->getSharedPaymentUrl()) {
                     $this->_redirectUrl($data->getSharedPaymentUrl());
                     return;
@@ -104,6 +105,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
 
             if ($data->isSuccess()) {
                 Mage::getSingleton('core/session')->setData('FormActionURL', $data->getFormActionURL());
+                Mage::getSingleton('core/session')->setData('AccessCode', $data['AccessCode']);
                 if ($data->getSharedPaymentUrl()) {
                     $result['url'] = $data->getSharedPaymentUrl();
                     $result['success'] = true;
@@ -143,6 +145,16 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $beagleScore = 0;
             $beagleVerification = array();
 
+            // Verify this access code belongs to this order
+            if (Mage::getSingleton('core/session')->getData('AccessCode') != $accessCode) {
+                Mage::throwException(
+                    Mage::helper('ewayrapid')->__(
+                        'An error occurred while making the transaction. Please try again. (Error message: %s)',
+                        $response->getMessage()
+                    )
+                );
+            }
+            
             $response = $this->_checkout->getInfoByAccessCode($accessCode);
             // Get Fraud Information
             if ($response->isSuccess()) {
