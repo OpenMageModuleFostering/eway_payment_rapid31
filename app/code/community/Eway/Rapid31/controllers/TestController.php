@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Administrator PC
- * Date: 8/7/14
- * Time: 10:05 AM
+ * 
  */
 class Eway_Rapid31_TestController extends Mage_Core_Controller_Front_Action
 {

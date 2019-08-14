@@ -146,4 +146,11 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
             Mage::log($message, Zend_Log::DEBUG, $file, true);
         }
     }
+    
+    protected function _fixTitle($title) {
+        if ($title == 'n/a' || empty($title)) {
+            return 'Mr.';
+        }
+        return $title;
+    }
 }

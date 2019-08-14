@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Administrator PC
- * Date: 7/22/14
- * Time: 9:07 AM
+ * 
  */
 class Eway_Rapid31_Adminhtml_IndexController extends Mage_Adminhtml_Controller_Action {
     public function indexAction() {

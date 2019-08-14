@@ -7,9 +7,9 @@ EwayPayment.prototype = {
     paymentUrl : null,
     ewayPayment: this,
     initialize: function(form, encryptionKey) {
-        if(form) {
+        if (form) {
             // Init client-side encryption
-            if(typeof eCrypt == 'function') {
+            if (typeof eCrypt == 'function') {
                 form.writeAttribute('data-eway-encrypt-key', encryptionKey);
                 eCrypt && eCrypt.init();
             }
@@ -535,6 +535,84 @@ EwayPayment.prototype = {
 
             return form_data;
         }
+    },
+    MageWorld: {
+        submit: function (e, notshipmethod, redirect) {
+            $MW_Onestepcheckout('#co-payment-form').show();
+            var form = new VarienForm('onestep_form');
+            var logic=true;
+
+            // check for shipping type
+            if(!$MW_Onestepcheckout('input[name=payment\\[method\\]]:checked').val() || !notshipmethod){
+                logic=false;
+            }				
+            if(!$MW_Onestepcheckout('input[name=payment\\[method\\]]:checked').val()){
+                if(!$MW_Onestepcheckout('#advice-required-entry_payment').length) {
+                $MW_Onestepcheckout('#checkout-payment-method-load').append('<dt><div class="validation-advice" id="advice-required-entry_payment" style="">'+message_payment+'</div></dt>');
+                //if($MW_Onestepcheckout('#advice-required-entry_payment').attr('display')!="none"){
+                //$MW_Onestepcheckout('#advice-required-entry_payment').css('display','block');
+                }
+            }
+            else
+            $MW_Onestepcheckout('#advice-required-entry_payment').remove();
+            //$MW_Onestepcheckout('#advice-required-entry_payment').css('display','none');
+
+            if(!notshipmethod){
+                if(!$MW_Onestepcheckout('#advice-required-entry_shipping').length){
+                $MW_Onestepcheckout('#checkout-shipping-method-loadding').append('<dt><div class="validation-advice" id="advice-required-entry_shipping" style="">'+message_ship+'</div></dt>');
+                //if($MW_Onestepcheckout('#advice-required-entry_shipping').attr('display')!="none"){
+                //$MW_Onestepcheckout('#advice-required-entry_shipping').css('display','block');
+                }
+
+            }
+            else
+            $MW_Onestepcheckout('#advice-required-entry_shipping').remove();
+            //$MW_Onestepcheckout('#advice-required-entry_shipping').css('display','none');
+
+            if(!form.validator.validate())	{
+                if(logined()!=1){
+                val=$MW_Onestepcheckout('#billing\\:email').val();
+                emailvalidated=Validation.get('IsEmpty').test(val) || /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i.test(val);
+                if(val!="" && emailvalidated){
+                    updateEmailmsg(val);
+                }
+                }
+                //val_emailbill_before=val;
+                Event.stop(e);				
+            }
+            else{
+                if(logined()!=1){
+                    //$MW_Onestepcheckout('#billing\\:email').blur(function(event){
+                    //val=this.value;
+                    var msgerror=1;
+                    val=$MW_Onestepcheckout('#billing\\:email').val();
+                    emailvalidated=Validation.get('IsEmpty').test(val) || /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i.test(val);
+                    if(val!="" && emailvalidated){
+                        msgerror=updateEmailmsg(val);
+                    }
+                    //val_emailbill_before=val;
+                    if(msgerror==0){
+                        return false;
+                    }
+                }
+
+                if(logic){
+                if($MW_Onestepcheckout("input[id*='ewayrapid_'][name='payment[method]']:checked").length > 0) {
+                    submitform = eCrypt.doEncrypt();
+                    submitform.submit();
+                } else {
+                    $MW_Onestepcheckout('#onestep_form').submit();   
+                }
+                
+                $MW_Onestepcheckout('#loading-mask').css('display','block');
+                $MW_Onestepcheckout('.btn-checkout').attr("disabled","disabled");
+                }
+                else {
+                    return false;
+                }
+            }
+            return false;
+        }
     }
 };
 
@@ -567,7 +645,7 @@ EwayPaymentToken.prototype = {
     },
 
     onSavedTokenChanged: function() {
-        if($('ewayrapid_saved_token') && $('ewayrapid_saved_token').value == 'new') {
+        if($('ewayrapid_saved_token') && !$('ewayrapid_saved_token').disabled && $('ewayrapid_saved_token').value == 'new') {
             this.ewayrapidToggleCcForm(true);
             this.ewayrapidSelectToken('new');
             $('ewayrapid_saved_cc_type') && $('ewayrapid_saved_cc_type').setValue('');
@@ -683,330 +761,4 @@ Validation.add('validate-cc-type-auto', 'Invalid credit card number or credit ca
 
 Validation.add('eway-validate-phone', 'Please enter a valid phone number.', function(v, elm) {
     return Validation.get('IsEmpty').test(v) || /^[0-9\+\*\(\)]{1,32}$/.test(v);
-});
-
-document.observe('dom:loaded', function(){
-    /*
-     var name = 'ewayrapid_saved_cc_owner';
-     // Validate card name
-     $('' + name).observe('keyup',function() {
-     if($('ewayrapid_saved_cc_owner').up()
-     .select('#advice-required-entry-ewayrapid_saved_cc_owner').length > 0) {
-     $('ewayrapid_saved_cc_owner').up()
-     .select('#advice-required-entry-ewayrapid_saved_cc_owner')[0].remove();
-     }
-     if($('ewayrapid_saved_cc_owner').value.length > 50) {
-     $('ewayrapid_saved_cc_owner').addClassName('validation-failed');
-     $('ewayrapid_saved_cc_owner').up().insert(
-     '<div id="advice-required-entry-ewayrapid_saved_cc_owner" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('ewayrapid_saved_cc_owner').up()
-     .select('#advice-required-entry-ewayrapid_saved_cc_owner').length > 0) {
-     $('ewayrapid_saved_cc_owner').up()
-     .select('#advice-required-entry-ewayrapid_saved_cc_owner')[0].remove();
-     }
-     // Remove class require on text field
-     $('ewayrapid_saved_cc_owner').removeClassName('validation-failed');
-     }
-     });
-
-     // First name
-     $('address_firstname').observe('keyup',function() {
-     if($('address_firstname').up()
-     .select('#advice-required-entry-address_firstname').length > 0) {
-     $('address_firstname').up()
-     .select('#advice-required-entry-address_firstname')[0].remove();
-     }
-     if($('address_firstname').value.length > 50) {
-     $('address_firstname').addClassName('validation-failed');
-     $('address_firstname').up().insert(
-     '<div id="advice-required-entry-address_firstname" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('ewayrapid_saved_cc_owner').up()
-     .select('#advice-required-entry-address_firstname').length > 0) {
-     $('address_firstname').up()
-     .select('#advice-required-entry-address_firstname')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_firstname').removeClassName('validation-failed');
-     }
-     });
-
-     // Last name
-     $('address_lastname').observe('keyup',function() {
-     if($('address_lastname').up()
-     .select('#advice-required-entry-address_lastname').length > 0) {
-     $('address_lastname').up()
-     .select('#advice-required-entry-address_lastname')[0].remove();
-     }
-     if($('address_lastname').value.length > 50) {
-     $('address_lastname').addClassName('validation-failed');
-     $('address_lastname').up().insert(
-     '<div id="advice-required-entry-address_lastname" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_lastname').up()
-     .select('#advice-required-entry-address_lastname').length > 0) {
-     $('address_lastname').up()
-     .select('#advice-required-entry-address_lastname')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_lastname').removeClassName('validation-failed');
-     }
-     });
-
-     // Company
-     $('address_company').observe('keyup',function() {
-     if($('address_company').up()
-     .select('#advice-required-entry-address_company').length > 0) {
-     $('address_company').up()
-     .select('#advice-required-entry-address_company')[0].remove();
-     }
-     if($('address_company').value.length > 50) {
-     $('address_company').addClassName('validation-failed');
-     $('address_company').up().insert(
-     '<div id="advice-required-entry-address_company" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_company').up()
-     .select('#advice-required-entry-address_company').length > 0) {
-     $('address_company').up()
-     .select('#advice-required-entry-address_company')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_company').removeClassName('validation-failed');
-     }
-     });
-
-     // job description
-     $('address_job_description').observe('keyup',function() {
-     if($('address_job_description').up()
-     .select('#advice-required-entry-address_job_description').length > 0) {
-     $('address_job_description').up()
-     .select('#advice-required-entry-address_job_description')[0].remove();
-     }
-     if($('address_job_description').value.length > 50) {
-     $('address_job_description').addClassName('validation-failed');
-     $('address_job_description').up().insert(
-     '<div id="advice-required-entry-address_job_description" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_job_description').up()
-     .select('#advice-required-entry-address_job_description').length > 0) {
-     $('address_job_description').up()
-     .select('#advice-required-entry-address_job_description')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_job_description').removeClassName('validation-failed');
-     }
-     });
-
-     // Phone
-     $('address_telephone').observe('keyup',function() {
-     if($('address_telephone').up()
-     .select('#advice-required-entry-address_telephone').length > 0) {
-     $('address_telephone').up()
-     .select('#advice-required-entry-address_telephone')[0].remove();
-     }
-     if($('address_telephone').value.length > 32) {
-     $('address_telephone').addClassName('validation-failed');
-     $('address_telephone').up().insert(
-     '<div id="advice-required-entry-address_telephone" ' +
-     'class="validation-advice" style="">Maxlength of this field is 32.</div>');
-     } else {
-     // Remove notify
-     if($('address_telephone').up()
-     .select('#advice-required-entry-address_telephone').length > 0) {
-     $('address_telephone').up()
-     .select('#advice-required-entry-address_telephone')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_telephone').removeClassName('validation-failed');
-     }
-     });
-     $('address_mobile').observe('keyup',function() {
-     if($('address_mobile').up()
-     .select('#advice-required-entry-address_mobile').length > 0) {
-     $('address_mobile').up()
-     .select('#advice-required-entry-address_mobile')[0].remove();
-     }
-     if($('address_mobile').value.length > 32) {
-     $('address_mobile').addClassName('validation-failed');
-     $('address_mobile').up().insert(
-     '<div id="advice-required-entry-address_mobile" ' +
-     'class="validation-advice" style="">Maxlength of this field is 32.</div>');
-     } else {
-     // Remove notify
-     if($('address_mobile').up()
-     .select('#advice-required-entry-address_mobile').length > 0) {
-     $('address_mobile').up()
-     .select('#advice-required-entry-address_mobile')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_mobile').removeClassName('validation-failed');
-     }
-     });
-     $('address_email').observe('keyup',function() {
-     if($('address_email').up()
-     .select('#advice-required-entry-address_email').length > 0) {
-     $('address_email').up()
-     .select('#advice-required-entry-address_email')[0].remove();
-     }
-     if($('address_email').value.length > 50) {
-     $('address_email').addClassName('validation-failed');
-     $('address_email').up().insert(
-     '<div id="advice-required-entry-address_email" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_email').up()
-     .select('#advice-required-entry-address_email').length > 0) {
-     $('address_email').up()
-     .select('#advice-required-entry-address_email')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_email').removeClassName('validation-failed');
-     }
-     });
-     $('address_fax').observe('keyup',function() {
-     if($('address_fax').up()
-     .select('#advice-required-entry-address_fax').length > 0) {
-     $('address_fax').up()
-     .select('#advice-required-entry-address_fax')[0].remove();
-     }
-     if($('address_fax').value.length > 32) {
-     $('address_fax').addClassName('validation-failed');
-     $('address_fax').up().insert(
-     '<div id="advice-required-entry-address_fax" ' +
-     'class="validation-advice" style="">Maxlength of this field is 32.</div>');
-     } else {
-     // Remove notify
-     if($('address_fax').up()
-     .select('#advice-required-entry-address_fax').length > 0) {
-     $('address_fax').up()
-     .select('#advice-required-entry-address_fax')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_fax').removeClassName('validation-failed');
-     }
-     });
-     $('address_street_1').observe('keyup',function() {
-     if($('address_street_1').up()
-     .select('#advice-required-entry-address_street_1').length > 0) {
-     $('address_street_1').up()
-     .select('#advice-required-entry-address_street_1')[0].remove();
-     }
-     if($('address_street_1').value.length > 50) {
-     $('address_street_1').addClassName('validation-failed');
-     $('address_street_1').up().insert(
-     '<div id="advice-required-entry-address_street_1" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_street_1').up()
-     .select('#advice-required-entry-address_street_1').length > 0) {
-     $('address_street_1').up()
-     .select('#advice-required-entry-address_street_1')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_street_1').removeClassName('validation-failed');
-     }
-     });
-     $('address_street_2').observe('keyup',function() {
-     if($('address_street_2').up()
-     .select('#advice-required-entry-address_street_2').length > 0) {
-     $('address_street_2').up()
-     .select('#advice-required-entry-address_street_2')[0].remove();
-     }
-     if($('address_street_2').value.length > 50) {
-     $('address_street_2').addClassName('validation-failed');
-     $('address_street_2').up().insert(
-     '<div id="advice-required-entry-address_street_2" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_street_2').up()
-     .select('#advice-required-entry-address_street_2').length > 0) {
-     $('address_street_2').up()
-     .select('#advice-required-entry-address_street_2')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_street_2').removeClassName('validation-failed');
-     }
-     });
-     $('address_city').observe('keyup',function() {
-     if($('address_city').up()
-     .select('#advice-required-entry-address_city').length > 0) {
-     $('address_city').up()
-     .select('#advice-required-entry-address_city')[0].remove();
-     }
-     if($('address_city').value.length > 50) {
-     $('address_city').addClassName('validation-failed');
-     $('address_city').up().insert(
-     '<div id="advice-required-entry-address_city" ' +
-     'class="validation-advice" style="">Maxlength of this field is 30.</div>');
-     } else {
-     // Remove notify
-     if($('address_city').up()
-     .select('#advice-required-entry-address_city').length > 0) {
-     $('address_city').up()
-     .select('#advice-required-entry-address_city')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_city').removeClassName('validation-failed');
-     }
-     });
-     $('address_region').observe('keyup',function() {
-     if($('address_region').up()
-     .select('#advice-required-entry-address_region').length > 0) {
-     $('address_region').up()
-     .select('#advice-required-entry-address_region')[0].remove();
-     }
-     if($('address_region').value.length > 50) {
-     $('address_region').addClassName('validation-failed');
-     $('address_region').up().insert(
-     '<div id="advice-required-entry-address_region" ' +
-     'class="validation-advice" style="">Maxlength of this field is 50.</div>');
-     } else {
-     // Remove notify
-     if($('address_region').up()
-     .select('#advice-required-entry-address_region').length > 0) {
-     $('address_region').up()
-     .select('#advice-required-entry-address_region')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_region').removeClassName('validation-failed');
-     }
-     });
-     $('address_zip').observe('keyup',function() {
-     if($('address_zip').up()
-     .select('#advice-required-entry-address_zip').length > 0) {
-     $('address_zip').up()
-     .select('#advice-required-entry-address_zip')[0].remove();
-     }
-     if($('address_zip').value.length > 50) {
-     $('address_zip').addClassName('validation-failed');
-     $('address_zip').up().insert(
-     '<div id="advice-required-entry-address_zip" ' +
-     'class="validation-advice" style="">Maxlength of this field is 30.</div>');
-     } else {
-     // Remove notify
-     if($('address_zip').up()
-     .select('#advice-required-entry-address_zip').length > 0) {
-     $('address_zip').up()
-     .select('#advice-required-entry-address_zip')[0].remove();
-     }
-     // Remove class require on text field
-     $('address_zip').removeClassName('validation-failed');
-     }
-     });
-     */
-
 });

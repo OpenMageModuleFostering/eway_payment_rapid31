@@ -1,10 +1,6 @@
 <?php
-
 /**
- * Created by PhpStorm.
- * User: hiephm
- * Date: 4/23/14
- * Time: 5:30 PM
+ * 
  */ 
 class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 {

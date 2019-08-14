@@ -26,8 +26,7 @@ try {
     $oAttribute = Mage::getSingleton('eav/config')->getAttribute('customer', 'block_fraud_customer');
     $oAttribute->setData('used_in_forms', array('adminhtml_customer'));
     $oAttribute->save();
-
-    $installer->endSetup();
 } catch (Exception $e) {
-
 }
+
+$installer->endSetup();

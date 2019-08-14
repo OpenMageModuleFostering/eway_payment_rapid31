@@ -197,16 +197,18 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount)
             ->setCurrencyCode($order->getBaseCurrencyCode());
         $this->setPayment($paymentParam);
+        
+        $title = $this->_fixTitle($billing->getPrefix());
 
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billing->getPrefix())
+        $customerParam->setTitle($title)
             ->setFirstName($billing->getFirstname())
             ->setLastName($billing->getLastname())
             ->setCompanyName($billing->getCompany())

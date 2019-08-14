@@ -14,8 +14,11 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $this->unsetData();
 
         $billingAddress = $quote->getBillingAddress();
+        
+        $title = $this->_fixTitle($billingAddress->getPrefix());
+        
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billingAddress->getPrefix() ? $billingAddress->getPrefix() : 'Mr')
+        $customerParam->setTitle($title)
             ->setFirstName($billingAddress->getFirstname())
             ->setLastName($billingAddress->getLastname())
             ->setCompanyName($billingAddress->getCompany())
@@ -111,7 +114,7 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $this->setShippingMethod('Other');
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
@@ -253,8 +256,11 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
             }
 
             $billingAddress = $quote->getBillingAddress();
+            
+            $title = $this->_fixTitle($billingAddress->getPrefix());
+            
             $customerParam = Mage::getModel('ewayrapid/field_customer');
-            $customerParam->setTitle($billingAddress->getPrefix() ? $billingAddress->getPrefix() : 'Mr')
+            $customerParam->setTitle($title)
                 ->setFirstName($billingAddress->getFirstname())
                 ->setLastName($billingAddress->getLastname())
                 ->setCompanyName($billingAddress->getCompany())
@@ -526,16 +532,18 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount);
         $paymentParam->setCurrencyCode($quote->getBaseCurrencyCode());
         $this->setPayment($paymentParam);
+        
+        $title = $this->_fixTitle($billing->getPrefix());
 
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billing->getPrefix())
+        $customerParam->setTitle($title)
             ->setFirstName($billing->getFirstname())
             ->setLastName($billing->getLastname())
             ->setCompanyName($billing->getCompany())

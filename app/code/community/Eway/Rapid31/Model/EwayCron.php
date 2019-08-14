@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Administrator PC
- * Date: 7/31/14
- * Time: 4:38 PM
+ * 
  */
 class Eway_Rapid31_Model_EwayCron {
 

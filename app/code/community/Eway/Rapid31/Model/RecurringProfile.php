@@ -404,6 +404,8 @@ class Eway_Rapid31_Model_RecurringProfile
      */
     public function checkRecurringTimeStart($startDate = null)
     {
+        // fix for ambigious timestamp (dashes force to dd/mm not mm/dd)
+        //$startDate = str_replace('/', '-', $startDate);
         // timezone used as store's timezone
         return strtotime(date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp(time()))) >= strtotime($startDate);
     }

@@ -3,13 +3,28 @@
 $installer = $this;
 
 $installer->startSetup();
-try {
-    $installer->run("
-        ALTER IGNORE TABLE sales_flat_order ADD COLUMN eway_transaction_id char(50) NULL;
-        ALTER TABLE sales_flat_quote ADD IGNORE COLUMN transaction_id char(50) NULL;
-    ");
-} catch (Exception $e) {
-}
+
+$installer->getConnection()
+    ->addColumn($installer->getTable('sales/order'),
+    'eway_transaction_id',
+    array(
+        'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
+        'length'    => 50,
+        'nullable' => true,
+        'comment' => 'eWAY Transaction ID'
+    )
+);
+
+$installer->getConnection()
+    ->addColumn($installer->getTable('sales/quote'),
+    'transaction_id',
+    array(
+        'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
+        'length'    => 50,
+        'nullable' => true,
+        'comment' => 'eWAY Transaction ID'
+    )
+);
 
 $setup = Mage::getResourceModel('customer/setup', 'core_setup');
 

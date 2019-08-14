@@ -14,7 +14,10 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->unsetData();
 
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billing->getPrefix())
+        
+        $title = $this->_fixTitle($billing->getPrefix());
+        
+        $customerParam->setTitle($title)
             ->setFirstName($billing->getFirstname())
             ->setLastName($billing->getLastname())
             ->setCompanyName($billing->getCompany())
@@ -84,7 +87,10 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->unsetData();
 
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billing->getPrefix())
+        
+        $title = $this->_fixTitle($billing->getPrefix());
+        
+        $customerParam->setTitle($title)
             ->setFirstName($billing->getFirstname())
             ->setLastName($billing->getLastname())
             ->setCompanyName($billing->getCompany())
@@ -170,7 +176,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
@@ -260,8 +266,11 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $tokenCustomerID = $request->get('TokenCustomerID');
         $this->unsetData();
         $customerParam = Mage::getModel('ewayrapid/field_customer');
+        
+        $title = $this->_fixTitle($billing->getPrefix());
+        
         $customerParam->setTokenCustomerID($tokenCustomerID)
-            ->setTitle($billing->getPrefix())
+            ->setTitle($title)
             ->setFirstName($billing->getFirstname())
             ->setLastName($billing->getLastname())
             ->setCompanyName($billing->getCompany())
@@ -307,7 +316,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->setMethod(!empty($tokenCustomerID) ? 'UpdateTokenCustomer' : 'CreateTokenCustomer');
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         $this->setTransactionType("Purchase");
         $this->setCustomerReadOnly(true);
 
@@ -343,7 +352,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->setMethod('');
         $this->setTransactionType('');
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
 
         $response = $this->_doRapidAPI('AccessCodes');

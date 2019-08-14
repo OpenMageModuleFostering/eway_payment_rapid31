@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Administrator PC
- * Date: 7/21/14
- * Time: 3:47 PM
+ * 
  */
 class Eway_Rapid31_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Sales_Order_Grid {
 

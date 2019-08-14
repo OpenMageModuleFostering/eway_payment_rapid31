@@ -1,6 +1,7 @@
 <?php $_config = Mage::getSingleton('ewayrapid/config'); ?>
 <?php $_backend = Mage::helper('ewayrapid')->isBackendOrder(); ?>
 <?php $_checkoutExtension = $this->getCheckoutExtension(); ?>
+<?php $_mageworld = Mage::helper('core')->isModuleEnabled('MW_Onestepcheckout'); ?>
 <?php if ($_config->isDirectConnection() || $_backend): ?>
     <script type="text/javascript">
         EwayPayment.supportCardTypes = <?php echo json_encode($_config->getSupportedCardTypes()) ?>;
@@ -61,7 +62,7 @@
             }
         });
         <?php break; ?>
-        <?php case 'IWDOnePageCheckout': // FireCheckout extension ?>
+        <?php case 'IWDOnePageCheckout': // IWD OnePageCheckout extension ?>
         document.observe("dom:loaded", function () {
             var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
             if (typeof IWD.OPC.ewayOldSavePayment == "undefined") {
@@ -79,6 +80,24 @@
         var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
         Payment.prototype.save = ewayPayment.savePaymentWithEncryption;
         Review.prototype.save = ewayPayment.saveReviewWithEncryption;
+        
+        document.observe("dom:loaded", function () {
+            window.onload = function(){
+            // MageWorld One Step Checkout Pro
+            if(typeof $MW_Onestepcheckout != 'undefined') {
+                $MW_Onestepcheckout('.btn-checkout').die('click');
+                $MW_Onestepcheckout('.btn-checkout').live("click",function(e){
+                    var ewayPayment = new EwayPayment($('onestep_form'), '<?php echo $_config->getEncryptionKey() ?>');
+                    <?php if($_mageworld && Mage::helper('onestepcheckout')->onlyProductDownloadable()):?>
+                        var notshipmethod=1;
+                    <?php else:?>
+                        var notshipmethod=$MW_Onestepcheckout("input[name=shipping_method]:checked").val();
+                    <?php endif?>
+                    ewayPayment.MageWorld.submit(e, notshipmethod, false);
+                });
+            }
+            }
+        });
         <?php endswitch; ?>
         <?php endif; ?>
     </script>
@@ -237,6 +256,51 @@
         }
         ewayPayment.paymentUrl = "<?php echo Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true)); ?>";
         Review.prototype.save = ewayPayment.saveReviewWithEncryptionTrans;
+        
+        document.observe("dom:loaded", function () {
+            window.onload = function(){
+            // MageWorld One Step Checkout Pro
+            if(typeof $MW_Onestepcheckout != 'undefined') {
+                
+                $('payment_form_ewayrapid_notsaved') && $('payment_form_ewayrapid_notsaved').setStyle({'width': '90%'});
+                $('payment_form_ewayrapid_saved') &&  $('payment_form_ewayrapid_saved').setStyle({'width': '90%'});
+                $('ul_payment_form_ewayrapid_notsaved') && $('ul_payment_form_ewayrapid_notsaved').setStyle({'margin-left': '-2px'});
+                $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $('payment_form_ewayrapid_saved') && $('payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $('ul-eway-saved-div-box') && $('ul-eway-saved-div-box').setStyle({'margin-left': '-2px'});
+                
+                $('ewayrapid_notsaved_expiration') && $('ewayrapid_notsaved_expiration').writeAttribute('style', 'width:103px !important;');
+                $('ewayrapid_saved_expiration') &&  $('ewayrapid_saved_expiration').writeAttribute('style', 'width:103px !important;');
+                $('ewayrapid_saved_token') && $('ewayrapid_saved_token').writeAttribute('style', 'width:128px !important;');
+                
+                $('ewayrapid_notsaved_cc_type_cvv_div') && $$('#ewayrapid_notsaved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');
+                $('ewayrapid_saved_cc_type_cvv_div') && $$('#ewayrapid_saved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');
+                
+                $$('#ul_payment_form_ewayrapid_notsaved input[type=text]').each(function (element) {
+                    element.writeAttribute('style', 'width: 80% !important;');
+                });
+
+                $('ul_payment_form_ewayrapid_saved') && $$('#ul_payment_form_ewayrapid_saved input[type=text]').each(function (element) {
+                    element.writeAttribute('style', 'width: 80% !important;');
+                });
+                
+                $MW_Onestepcheckout('.btn-checkout').die('click');
+                $MW_Onestepcheckout('.btn-checkout').live("click",function(e){
+                    alert('Transparent Redirect is not supported with MageWorld One Step Checkout Pro.');
+                    return false;
+                    var ewayPayment = new EwayPayment($('onestep_form'), '<?php echo $_config->getEncryptionKey() ?>');
+                    ewayPayment.paymentUrl = "<?php echo Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true)); ?>";
+                    <?php if($_mageworld && Mage::helper('onestepcheckout')->onlyProductDownloadable()):?>
+                        var notshipmethod=1;
+                    <?php else:?>
+                        var notshipmethod=$MW_Onestepcheckout("input[name=shipping_method]:checked").val();
+                    <?php endif?>
+                    ewayPayment.MageWorld.submit(e, notshipmethod, true);
+                });
+            }
+            }
+        });
+        
         <?php endswitch; ?>
 
     </script>

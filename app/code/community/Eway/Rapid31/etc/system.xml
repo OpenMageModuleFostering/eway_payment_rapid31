@@ -65,7 +65,7 @@
                             <sort_order>50</sort_order>
                             <comment>
                                 <![CDATA[
-                                    <a href="https://myeway.force.com/success/s/article/How-do-I-setup-my-Live-eWAY-API-Key-and-Password" target="_blank">How to generate Live Rapid 3.1 API Key and Password</a>
+                                    <a href="https://go.eway.io/s/article/How-do-I-setup-my-Live-eWAY-API-Key-and-Password" target="_blank">How to generate Live Rapid 3.1 API Key and Password</a>
                                 ]]>
                             </comment>
                         </live_api_password>
@@ -96,7 +96,7 @@
                             <sort_order>70</sort_order>
                             <comment>
                                 <![CDATA[
-                                    <a href="https://myeway.force.com/success/s/article/How-do-I-set-up-my-Sandbox-API-Key-and-password" target="_blank">How to generate Sandbox Rapid 3.1 API Key and Password</a>
+                                    <a href="https://go.eway.io/s/article/How-do-I-set-up-my-Sandbox-API-Key-and-password" target="_blank">How to generate Sandbox Rapid 3.1 API Key and Password</a>
                                 ]]>
                             </comment>
                         </sandbox_api_password>

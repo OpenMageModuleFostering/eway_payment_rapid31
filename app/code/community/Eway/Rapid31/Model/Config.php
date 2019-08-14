@@ -25,7 +25,7 @@ class Eway_Rapid31_Model_Config
     const PAYPAL_EXPRESS_METHOD         = 'paypal_express';
     const MASTERPASS_METHOD             = 'masterpass';
 
-    const MESSAGE_ERROR_ORDER           = 'Billing Frequency is wrong. It must be numeric and greater than 0. Status of recurring profile is changed to canceled';
+    const MESSAGE_ERROR_ORDER           = 'Billing Frequency is wrong. It must be numeric and greater than 0. Status of recurring profile is changed to cancelled';
 
     const TRANSPARENT_ACCESSCODE         = 'AccessCodes';
     const TRANSPARENT_ACCESSCODE_RESULT  = 'AccessCode';

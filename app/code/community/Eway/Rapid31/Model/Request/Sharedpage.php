@@ -213,7 +213,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $this->setShippingMethod('Other');
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
@@ -224,7 +224,10 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         // add Billing Address
         $billingAddress = $this->_quote->getBillingAddress();
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        $customerParam->setTitle($billingAddress->getPrefix() ? $billingAddress->getPrefix() : 'Mr')
+        
+        $title = $this->_fixTitle($billingAddress->getPrefix());
+        
+        $customerParam->setTitle($title)
             ->setFirstName($billingAddress->getFirstname())
             ->setLastName($billingAddress->getLastname())
             ->setCompanyName($billingAddress->getCompany())

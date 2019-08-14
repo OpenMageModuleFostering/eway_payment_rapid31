@@ -1,0 +1,145 @@
+<_>
+   <form_key>zlEmYI88Nf5v0PME</form_key>
+   <name>eWAY_Payment_Rapid31</name>
+   <channel>community</channel>
+   <version_ids>
+      <version_ids>2</version_ids>
+   </version_ids>
+   <summary>The eWAY payment module - accept credit card payments, save cards, process refunds with eWAY&apos;s Rapid 3.1 Payment Gateway.</summary>
+   <description>The eWAY Rapid 3.1 payments module - made by eWAY for eWAY merchants:
+
+- It&apos;s free!
+- Fast and easy to set up and integrate
+- Smash chargebacks with global fraud protection
+- More options for your customers - more payment methods
+- Improve basket conversion with faster checkout features
+- Full Magento back-office integration, including manual orders and refunds
+- Supports eWAY&apos;s Sandbox for testing
+- Your customers can save their card details using eWAY&apos;s secure servers for faster checkout
+- Get help when and where you need it with 24/7 support
+
+Discover more at http://www.eway.com.au - payments made smarter!</description>
+   <license>OSL v3.0</license>
+   <license_uri/>
+   <version>1.3.1</version>
+   <stability>stable</stability>
+   <notes>Minor fixes:
+
+ - Fix for stores with custom DB table prefixes
+ - Improved recurring initial fee handling
+ - Fix for manual payments not submitting for some stores
+ - Fix for update token with Direct sometimes failing</notes>
+   <authors>
+      <name>
+         <name>eWAY Payments</name>
+      </name>
+      <user>
+         <user>eWAYPayments</user>
+      </user>
+      <email>
+         <email>partner@eway.com.au</email>
+      </email>
+   </authors>
+   <depends_php_min>5.2.0</depends_php_min>
+   <depends_php_max>6.0.0</depends_php_max>
+   <depends>
+      <package>
+         <name>
+            <name/>
+         </name>
+         <channel>
+            <channel/>
+         </channel>
+         <min>
+            <min/>
+         </min>
+         <max>
+            <max/>
+         </max>
+         <files>
+            <files>                       </files>
+         </files>
+      </package>
+      <extension>
+         <name>
+            <name>Core</name>
+            <name>curl</name>
+         </name>
+         <min>
+            <min/>
+            <min/>
+         </min>
+         <max>
+            <max/>
+            <max/>
+         </max>
+      </extension>
+   </depends>
+   <contents>
+      <target>
+         <target>magelocal</target>
+         <target>magecommunity</target>
+         <target>magedesign</target>
+         <target>magedesign</target>
+         <target>mageetc</target>
+         <target>magelocale</target>
+         <target>mageskin</target>
+         <target>mageskin</target>
+         <target>mageweb</target>
+         <target>magedesign</target>
+         <target>magedesign</target>
+      </target>
+      <path>
+         <path/>
+         <path>Eway</path>
+         <path>adminhtml/default/default/layout/ewayrapid/</path>
+         <path>frontend/base/default/layout/ewayrapid</path>
+         <path>modules/Eway_Rapid31.xml</path>
+         <path>en_US/Eway_Rapid31.csv</path>
+         <path>adminhtml/default/default/ewayrapid.css</path>
+         <path>frontend/base/default/css/ewayrapid.css</path>
+         <path>js/ewayrapid</path>
+         <path>adminhtml/default/default/template/ewayrapid</path>
+         <path>frontend/base/default/template/ewayrapid</path>
+      </path>
+      <type>
+         <type>file</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>file</type>
+         <type>file</type>
+         <type>file</type>
+         <type>file</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>dir</type>
+      </type>
+      <include>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+      </include>
+      <ignore>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+      </ignore>
+   </contents>
+</_>
