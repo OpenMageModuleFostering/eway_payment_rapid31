@@ -59,3 +59,4 @@
 #container_payment_method_ewayrapid_saved label,
 #container_payment_method_ewayrapid_notsaved label{ text-align: left; }
 .eway-saved-label-box { width: auto !important; }
+#ul-eway-saved-div-box { display: block !important; }

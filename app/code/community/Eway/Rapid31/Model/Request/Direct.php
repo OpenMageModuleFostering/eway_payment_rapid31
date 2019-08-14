@@ -196,7 +196,8 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         } else {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');

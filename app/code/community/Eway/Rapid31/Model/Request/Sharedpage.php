@@ -39,6 +39,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $paypal = null;
         $totalAmount = 0;
 
+        if ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD) {
         if ($this->_isNewToken()) {
             $returnUrl .= '?newToken=1';
             $method = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN;
@@ -46,6 +47,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
             $returnUrl .= '?editToken=' . $token;
             $token = Mage::helper('ewayrapid/customer')->getCustomerTokenId($token);
             $method = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN;
+            }
         } else {
             if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
                 $method = Eway_Rapid31_Model_Config::METHOD_PROCESS_PAYMENT;
@@ -210,7 +212,8 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         // prepare API
         $this->setShippingMethod('Other');
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
@@ -519,5 +522,9 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
             }
         }
         return false;
+    }
+    public function getMethod()
+    {
+        return Mage::getSingleton('core/session')->getData('ewayMethod');
     }
 }

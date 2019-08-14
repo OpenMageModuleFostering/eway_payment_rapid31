@@ -15,7 +15,12 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return Mage::app()->getStore()->isAdmin();
     }
-
+    
+    public function getExtensionVersion()
+    {
+        return (string) Mage::getConfig()->getModuleConfig("Eway_Rapid31")->version;
+    }
+    
     public function serializeInfoInstance(&$info)
     {
         $fieldsToSerialize = array('is_new_token', 'is_update_token', 'saved_token');

@@ -9,7 +9,7 @@ class Eway_Rapid31_Block_Form_Transparent_Saved extends Mage_Payment_Block_Form_
         $this->setTemplate('ewayrapid/form/transparent_saved.phtml');
 
         //unset all session's transaparent
-        Mage::getModel('ewayrapid/request_transparent')->unsetSessionData();
+        //Mage::getModel('ewayrapid/request_transparent')->unsetSessionData();
     }
 
     /**

@@ -158,8 +158,10 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
                 $shipping = $quote->getBillingAddress();
             }
         }
-
-        $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
+        
+        if (!$payment->getIsRecurring()) {
+            $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
+        }
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } elseif ($payment->getIsRecurring()) {
@@ -167,7 +169,8 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         } else {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
@@ -302,8 +305,9 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->setRedirectUrl($returnUrl);
         $this->setCancelUrl($returnUrl);
         $this->setMethod(!empty($tokenCustomerID) ? 'UpdateTokenCustomer' : 'CreateTokenCustomer');
-        $this->setCustomerIP($_SERVER["REMOTE_ADDR"]);
-        $this->setDeviceID('');
+        $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         $this->setTransactionType("Purchase");
         $this->setCustomerReadOnly(true);
 
@@ -338,8 +342,9 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->setRedirectUrl($returnUrl);
         $this->setMethod('');
         $this->setTransactionType('');
-        $this->setDeviceID('');
-        $this->setCustomerIP($_SERVER["REMOTE_ADDR"]);
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
+        $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
 
         $response = $this->_doRapidAPI('AccessCodes');
 

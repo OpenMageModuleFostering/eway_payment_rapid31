@@ -85,6 +85,11 @@
 <?php endif; ?>
 
 <?php if ($_config->isTransparentConnection() && !$_backend): ?>
+    <?php if($_checkoutExtension) {
+        Mage::getSingleton('core/session')->setCheckoutExtension($_checkoutExtension);
+    } else {
+        Mage::getSingleton('core/session')->unsCheckoutExtension();
+    }?>
     <script type="text/javascript">
         var creditcard = '<?php echo Eway_Rapid31_Model_Config::CREDITCARD_METHOD ?>';
 
@@ -112,6 +117,7 @@
 
                 $('ul_payment_form_ewayrapid_notsaved') && $('ul_payment_form_ewayrapid_notsaved').setStyle({'margin-left': '-2px'});
                 $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $('ul-eway-saved-div-box') && $('ul-eway-saved-div-box').setStyle({'margin-left': '-2px'});
                 $$('#container_payment_method_ewayrapid_notsaved ul li').each(function (element) {
                     element.writeAttribute('style', 'float: left; width: 100%');
                 });
@@ -134,6 +140,7 @@
                 $('ul_payment_form_ewayrapid_notsaved') && $('ul_payment_form_ewayrapid_notsaved').setStyle({'margin-left': '-2px'});
                 $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
                 $('payment_form_ewayrapid_saved') && $('payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $('ul-eway-saved-div-box') && $('ul-eway-saved-div-box').setStyle({'margin-left': '-2px'});
 
                 $('ewayrapid_notsaved_cc_type_cvv_div') && $$('#ewayrapid_notsaved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');
                 $('ewayrapid_saved_cc_type_cvv_div') && $$('#ewayrapid_saved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');

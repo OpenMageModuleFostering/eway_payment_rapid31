@@ -29,6 +29,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
     protected $_connectionType;
     protected $_isBackendOrder;
 
+    public static $_extension = false;
     public function __construct()
     {
         parent::__construct();
@@ -88,9 +89,12 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
         $info = $this->getInfoInstance();
 
         if (!$this->_isBackendOrder && $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
-            Mage::helper('ewayrapid')->clearSessionSharedpage();
+//            Mage::helper('ewayrapid')->clearSessionSharedpage();
             //Mage::getSingleton('core/session')->setData('sharedpagePaypal', $data->getSharedpageNotsaved());
-            Mage::getSingleton('core/session')->setData('sharedpagePaypal', 'paypal');
+//            Mage::getSingleton('core/session')->setData('sharedpagePaypal', 'paypal');
+            if ($data->getMethod()) {
+                Mage::getSingleton('core/session')->setData('ewayMethod', $data->getMethod());
+            }
         } elseif (!$this->_isBackendOrder && $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT) {
             $info->setTransparentNotsaved($data->getTransparentNotsaved());
 
@@ -469,6 +473,12 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
         }
         elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
                 === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
+            && Mage::getSingleton('core/session')->getCheckoutExtension()
+        ) {
+            return Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true));
+        }
+        /*elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+                === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
                 && (Mage::getStoreConfig('onestepcheckout/general/active')
                 || Mage::getStoreConfig('opc/global/status')
                 || Mage::getStoreConfig('firecheckout/general/enabled')
@@ -476,7 +486,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                 || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
         ) {
             return Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true));
-        }
+        }*/
         return null;
     }
 }

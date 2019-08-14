@@ -28,7 +28,7 @@
 $_code = $this->methodPayment;
 if (!$_code) $_code = 'ewayrapid_notsaved';
 
-$infoCard = Mage::getSingleton('core/session')->getInfoCard();;
+$infoCard = Mage::getSingleton('core/session')->getInfoCard();
 if (is_numeric($this->savedToken)) {
     $infoCardData = Mage::helper('ewayrapid/customer')->getTokenById($this->savedToken);
     if($infoCard->getOwner()) {

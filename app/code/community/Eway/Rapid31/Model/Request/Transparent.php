@@ -110,7 +110,8 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $this->setMethod($method);
         $this->setShippingMethod('Other');
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
@@ -524,7 +525,8 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         } else {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
-        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion());
+        $version = Mage::helper('ewayrapid')->getExtensionVersion();
+        $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY Official '.$version);
         $this->setShippingMethod('Other');
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');

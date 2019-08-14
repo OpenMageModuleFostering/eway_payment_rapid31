@@ -122,6 +122,19 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $payment->setAdditionalInformation('successType', $successType);
             Mage::getSingleton('core/session')->setData('ewayTransactionID', $response->getTransactionID());
             $orderId = $this->getOnepage()->saveOrder()->getLastOrderId();
+            $this->getOnepage()->getQuote()->setIsActive(1);
+            try {
+                $cartHelper = Mage::helper('checkout/cart');
+                //Get all items from cart
+                $items = $cartHelper->getCart()->getItems();
+                //Loop through all of cart items
+                foreach ($items as $item) {
+                    $itemId = $item->getItemId();
+                    //Remove items, one by one
+                    $cartHelper->getCart()->removeItem($itemId)->save();
+                }
+            } catch (Exception $e) {
+            }
             $this->getOnepage()->getQuote()->save();
             return $orderId;
         } catch (Exception $e) {

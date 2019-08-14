@@ -106,11 +106,12 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 }
                 if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
                     === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
-                    && (Mage::getStoreConfig('onestepcheckout/general/active')
+                    && Mage::getSingleton('core/session')->getCheckoutExtension()
+                    /*(Mage::getStoreConfig('onestepcheckout/general/active')
                         || Mage::getStoreConfig('opc/global/status')
                         || Mage::getStoreConfig('firecheckout/general/enabled')
                         || Mage::getStoreConfig('gomage_checkout/general/enabled')
-                        || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+                        || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))*/
                 ) {
                     $this->_redirectUrl($urlRedirect);
                     return;
@@ -127,14 +128,14 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
         } catch (Exception $e) {
             Mage::getSingleton('core/session')->addError(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later.'));
             $this->transparentModel()->unsetSessionData();
-            $this->transparentModel()->unsetSessionData();
             if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
                 === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
-                && (Mage::getStoreConfig('onestepcheckout/general/active')
+                && Mage::getSingleton('core/session')->getCheckoutExtension()
+                /*(Mage::getStoreConfig('onestepcheckout/general/active')
                     || Mage::getStoreConfig('opc/global/status')
                     || Mage::getStoreConfig('firecheckout/general/enabled')
                     || Mage::getStoreConfig('gomage_checkout/general/enabled')
-                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))*/
             ) {
                 $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
                 return;
@@ -242,17 +243,19 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             $this->transparentModel()->unsetSessionData();
             if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
                 === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
-                && (Mage::getStoreConfig('onestepcheckout/general/active')
+                && Mage::getSingleton('core/session')->getCheckoutExtension()
+                /*(Mage::getStoreConfig('onestepcheckout/general/active')
                     || Mage::getStoreConfig('opc/global/status')
                     || Mage::getStoreConfig('firecheckout/general/enabled')
                     || Mage::getStoreConfig('gomage_checkout/general/enabled')
-                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))*/
             ) {
                 $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
                 return;
             }
             else {
-                echo Mage::getUrl('checkout/cart/');
+                //echo Mage::getUrl('checkout/cart/');
+                $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
             }
             return;
         }
@@ -334,6 +337,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
 
             $this->getOnepage()->getQuote()->save();
             Mage::getSingleton('core/session')->unsetData('transparentCheckout');
+            Mage::getSingleton('core/session')->unsCheckoutExtension();
             return $orderId;
         } catch (Exception $e) {
             Mage::throwException($e->getMessage());

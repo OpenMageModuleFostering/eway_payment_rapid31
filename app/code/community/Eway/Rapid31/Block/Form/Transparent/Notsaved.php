@@ -7,7 +7,7 @@ class Eway_Rapid31_Block_Form_Transparent_Notsaved extends Mage_Payment_Block_Fo
         parent::_construct();
 
         //unset all session's transaparent;
-        Mage::getModel('ewayrapid/request_transparent')->unsetSessionData();
+        //Mage::getModel('ewayrapid/request_transparent')->unsetSessionData();
 
         $this->setTemplate('ewayrapid/form/transparent_notsaved.phtml');
     }

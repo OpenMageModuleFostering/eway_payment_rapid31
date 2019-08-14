@@ -96,7 +96,7 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
         if (curl_errno($ch) != CURLE_OK) {
             $response->isSuccess(false);
             $response->setMessage(Mage::helper('ewayrapid')->__("There is an error in making API request: %s", curl_error($ch)));
-            $this->_log("There is an error in making API request: %s", curl_error($ch));
+            $this->_log("There is an error in making API request: " . curl_error($ch));
         } else {
             $info = curl_getinfo($ch);
             $http_code = intval(trim($info['http_code']));
@@ -104,6 +104,10 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
                 $response->isSuccess(false);
                 $response->setMessage(Mage::helper('ewayrapid')->__("Please check the API Key and Password %s", $mode));
                 $this->_log('Access denied. HTTP_CODE = ' . $info['http_code']);
+            } elseif ($http_code != 200) {
+                $response->isSuccess(false);
+                $response->setMessage(Mage::helper('ewayrapid')->__("Error connecting to payment gateway, please try again"));
+                $this->_log('Error connecting to payment gateway. HTTP_CODE = ' . $info['http_code']);
             } else {
                 $response->isSuccess(true);
                 $response->decodeJSON($result);

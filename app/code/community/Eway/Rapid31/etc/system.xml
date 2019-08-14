@@ -10,6 +10,15 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
+                        <version translate="label">
+                            <label>eWAY extension version</label>
+                            <frontend_type>select</frontend_type>
+                            <frontend_model>Eway_Rapid31_Block_Admin_Version</frontend_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </version>
                         <active translate="label">
                             <label>Enable this solution</label>
                             <frontend_type>select</frontend_type>

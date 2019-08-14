@@ -139,6 +139,10 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         'V6142' => 'Authorise not available for Bank/Branch',
         'V6150' => 'Invalid Refund Amount',
         'V6151' => 'Refund amount greater than original transaction',
+        'V6152' => 'Original transaction already refunded for total amount',
+        'V6153' => 'Card type not support by merchant',
+        'V6160' => 'Encryption Method Not Supported',
+        'V6165' => 'Invalid Visa Checkout data or decryption failed',
 
         'D4401' => 'Refer to Issuer',
         'D4402' => 'Refer to Issuer, special',
@@ -245,6 +249,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         'F9033' => 'Invalid Billing Street',
         'F9034' => 'Invalid Shipping Street',
         'F9037' => 'Suspicious Customer Email Address',
+        'F9050' => 'High Risk Email Address and amount',
     );
 
     public function getMessage() {
@@ -306,12 +311,17 @@ class Eway_Rapid31_Model_Response extends Varien_Object
             if (isset($json['ResponseMessage']) && $this->isSuccess()) {
                 $codeMessage = str_replace(' ', '', $json['ResponseMessage']);
                 $codeMessage = explode(',', $codeMessage);
-                $codeMessage = array_flip($codeMessage);
+                //$codeMessage = array_flip($codeMessage);
 
-                $result = array_intersect_key($this->_messageCode, $codeMessage);
+                //$result = array_intersect_key($this->_messageCode, $codeMessage);
+                $result = preg_grep("/^F.*/", $codeMessage);
                 if (!empty($result)) {
+                    $codes = array_flip($result);
+                    $resultMatched = array_intersect_key($this->_messageCode, $codes);
+                    $resultDefault = array_fill_keys(array_keys($codes), "Unknown fraud rule");
+                    $resultMessages = array_merge($resultDefault,$resultMatched);
                     Mage::getSingleton('core/session')->setData('fraud', 1);
-                    $fraudMessage = implode(', ', $result);
+                    $fraudMessage = implode(', ', $resultMessages);
                     Mage::getSingleton('core/session')->setData('fraudMessage', $fraudMessage);
                 }
             }
@@ -348,13 +358,19 @@ class Eway_Rapid31_Model_Response extends Varien_Object
     public function replaceMessage($message)
     {
         $results = $message;
+        $found = false;
         if($this->_codes) {
             foreach ($this->_codes as $code => $mess) {
                 if(strpos($message, $code) !== false) {
+                    $found = true;
                     $results = str_replace( $results, $code, $mess );
                 }
             }
         }
-        return $results;
+        if ($found) {
+            return $results;
+        } else {
+            return Mage::helper('ewayrapid')->__('Transaction failed.');
+        }
     }
 }

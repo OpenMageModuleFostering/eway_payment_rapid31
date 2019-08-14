@@ -119,7 +119,7 @@ EwayPayment.prototype = {
             this.prototype.ewaysavedOldOrder();
         }
     },
-    subMitForm: function () {alert(12121212);
+    subMitForm: function () {
         form = eCrypt.doEncrypt();
         form.submit();
     },
@@ -159,6 +159,9 @@ EwayPayment.prototype = {
                 var elements = form.select('input').concat(form.select('select')).concat(form.select('textarea'));
                 for (var i=0; i<elements.length; i++) elements[i].disabled = false;
                 this.currentMethod = method;
+                if ($('ul_payment_form_'+method)) {
+                    $('ul_payment_form_'+method).show();
+                }
             }
         }
     },

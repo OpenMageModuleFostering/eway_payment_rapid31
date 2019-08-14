@@ -1,8 +1,8 @@
-// eWAY RSA Client Cryptography 
-// Version 0.6 Alpha
 
 function eCrypt() {
     this.init = null;
+    this.submitForm = null;
+    this.encryptValue = null;
     this.doEncrypt = null;
 }
 
@@ -17,21 +17,45 @@ function eCrypt() {
 
         var isAjaxCall = false;
 
-        // TODO: How should we handle form not found...
         var form = findFormToEncrypt();
+        if (form) {
         extractPublicKey(form);
         addSubmitEvent(form);
+        }
 
+        //API Entrypoint for JS to submit the form manually
+        function submitFormApi() {
+            var form = findFormToEncrypt();
+            if (form)
+                return submitForm(form);
+            else
+                return false;
+        }
+        function encryptValueApi(val, key) {
+            var keyToUse = null;
+            if (key) keyToUse = b64tohex(key);
+            if (!keyToUse) keyToUse = PUBLIC_KEY_N;
+            if (keyToUse) {
+                var rsa = new RSAKey();
+                rsa.setPublic(keyToUse, PUBLIC_KEY_E);
+                return "eCrypted:" + rsa.encrypt(val);
+            } else
+                return null;
+        }
         function encryptForm(event) {
+            var target;
+            // the form is not the event target in ajax call, so we use form variable found before
+            if(form != null) {
+                target = form;
+            } else {
+                event = event || window.event;  // event is undefined in IE
+                target = event.target || event.srcElement; // IE uses srcElement, everything else uses target
+            }
+            return submitForm(target);
+        }
+        // Clones and submuits the form, running it's original submit handler                
+        function submitForm(target) {
             try {
-                var target;
-                // the form is not the event target in ajax call, so we use form variable found before
-                if(form != null) {
-                    target = form;
-                } else {
-                    event = event || window.event;  // event is undefined in IE
-                    target = event.target || event.srcElement; // IE uses srcElement, everything else uses target
-                }
                 var rsa = new RSAKey();
                 rsa.setPublic(PUBLIC_KEY_N, PUBLIC_KEY_E);
                 var newForm = cloneForm(target);
@@ -53,10 +77,10 @@ function eCrypt() {
                 form.parentNode.appendChild(newForm);  //IE and FF will not submit form without it being inserted into the DOM
                 if(isAjaxCall) {
                     return newForm;
-                } else {
-                    var formProxy = document.createElement('form');
-                    formProxy.submit.apply(newForm);  // To guard against a form with a button named 'submit'
                 }
+                var formProxy = document.createElement('form');
+                formProxy.submit.apply(newForm);  // To guard against a form with a button named 'submit'
+
             }
             catch (err) {
                 // Debugging - In case console not open in IE
@@ -152,18 +176,18 @@ function eCrypt() {
                 return encryptForm();
             }
         }
+        // Add Public API Entry Points into these functions
+        eCrypt.submitForm = submitFormApi;
+        eCrypt.encryptValue = encryptValueApi;
     };
 
 
 
-    // Start jsbn.js
     var dbits;
 
-    // JavaScript engine analysis
     var canary = 0xdeadbeefcafe;
     var j_lm = ((canary & 0xffffff) == 0xefcafe);
 
-    // (public) Constructor
     function BigInteger(a, b, c) {
         if (a != null)
             if ("number" == typeof a) this.fromNumber(a, b, c);
@@ -171,17 +195,10 @@ function eCrypt() {
             else this.fromString(a, b);
     }
 
-    // return new, unset BigInteger
+
     function nbi() { return new BigInteger(null); }
 
-    // am: Compute w_j += (x*this_i), propagate carries,
-    // c is initial carry, returns final carry.
-    // c < 3*dvalue, x < 2*dvalue, this_i < dvalue
-    // We need to select the fastest one that works in this environment.
 
-    // am1: use a single mult and divide to get the high bits,
-    // max digit bits should be 26 because
-    // max internal value = 2*dvalue^2-2*dvalue (< 2^53)
     function am1(i, x, w, j, c, n) {
         while (--n >= 0) {
             var v = x * this[i++] + w[j] + c;
@@ -190,9 +207,7 @@ function eCrypt() {
         }
         return c;
     }
-    // am2 avoids a big mult-and-extract completely.
-    // Max digit bits should be <= 30 because we do bitwise ops
-    // on values up to 2*hdvalue^2-hdvalue-1 (< 2^31)
+
     function am2(i, x, w, j, c, n) {
         var xl = x & 0x7fff, xh = x >> 15;
         while (--n >= 0) {
@@ -205,8 +220,7 @@ function eCrypt() {
         }
         return c;
     }
-    // Alternately, set max digit bits to 28 since some
-    // browsers slow down when dealing with 32-bit numbers.
+
     function am3(i, x, w, j, c, n) {
         var xl = x & 0x3fff, xh = x >> 14;
         while (--n >= 0) {
@@ -258,14 +272,14 @@ function eCrypt() {
         return (c == null) ? -1 : c;
     }
 
-    // (protected) copy this to r
+
     function bnpCopyTo(r) {
         for (var i = this.t - 1; i >= 0; --i) r[i] = this[i];
         r.t = this.t;
         r.s = this.s;
     }
 
-    // (protected) set from integer value x, -DV <= x < DV
+
     function bnpFromInt(x) {
         this.t = 1;
         this.s = (x < 0) ? -1 : 0;
@@ -274,7 +288,6 @@ function eCrypt() {
         else this.t = 0;
     }
 
-    // return bigint initialized to value
     function nbv(i) { var r = nbi(); r.fromInt(i); return r; }
 
     // (protected) set from string and radix
@@ -575,15 +588,7 @@ function eCrypt() {
     Classic.prototype.sqrTo = cSqrTo;
 
     // (protected) return "-1/this % 2^DB"; useful for Mont. reduction
-    // justification:
-    //         xy == 1 (mod m)
-    //         xy =  1+km
-    //   xy(2-xy) = (1+km)(1-km)
-    // x[y(2-xy)] = 1-k^2m^2
-    // x[y(2-xy)] == 1 (mod m^2)
-    // if y is 1/x mod m, then y(2-xy) is 1/x mod m^2
-    // should reduce x and y(2-xy) by m^2 at each step to keep size bounded.
-    // JS multiply "overflows" differently from C/C++, so care is needed here.
+
     function bnpInvDigit() {
         if (this.t < 1) return 0;
         var x = this[0];
@@ -753,15 +758,10 @@ function eCrypt() {
         return new Arcfour();
     }
 
-    // Pool size must be a multiple of 4 and greater than 32.
-    // An array of bytes the size of the pool will be passed to init()
+
     var rng_psize = 256;
 
-    // Random number generator - requires a PRNG backend, e.g. prng4.js
 
-    // For best results, put code like
-    // <body onClick='rng_seed_time();' onKeyPress='rng_seed_time();'>
-    // in your main HTML document.
 
     var rng_state;
     var rng_pool;
@@ -820,7 +820,7 @@ function eCrypt() {
             rng_pptr = 0;
             //rng_pool = null;
         }
-        // TODO: allow reseeding after first request
+
         return rng_state.next();
     }
 
@@ -834,11 +834,8 @@ function eCrypt() {
     SecureRandom.prototype.nextBytes = rng_get_bytes;
 
 
-    // Depends on jsbn.js and rng.js
 
-    // Version 1.1: support utf-8 encoding in pkcs1pad2
 
-    // convert a (hex) string to a bignum object
     function parseBigInt(str, r) {
         return new BigInteger(str, r);
     }

@@ -5,5 +5,7 @@ class Eway_Rapid31_Block_Form_Sharedpage_Notsaved extends Mage_Payment_Block_For
     {
         parent::_construct();
         $this->setTemplate('ewayrapid/form/sharedpage_notsaved.phtml');
+        // unset all session's sharedpage
+        Mage::helper('ewayrapid')->clearSessionSharedpage();
     }
 }

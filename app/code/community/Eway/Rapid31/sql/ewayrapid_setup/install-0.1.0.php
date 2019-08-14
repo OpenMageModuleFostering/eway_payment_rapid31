@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: hiephm
- * Date: 4/23/14
- * Time: 5:30 PM
+ * 
  */
 /* @var $installer Mage_Core_Model_Resource_Setup */
 $installer = $this;

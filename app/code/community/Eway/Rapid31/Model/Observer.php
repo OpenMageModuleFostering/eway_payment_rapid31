@@ -1,12 +1,12 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Administrator PC
- * Date: 7/18/14
- * Time: 2:26 PM
+ *
  */
 class Eway_Rapid31_Model_Observer {
 
+    /* @var Magento_Sales_Model_Order_Invoice*/
+    var $_invoice;
+    
     public function myCards() {
 
     }
@@ -21,10 +21,6 @@ class Eway_Rapid31_Model_Observer {
                 && $fraud_enabled
                 && (int)$unblock === 0
             ) {
-                //echo 'You can\'t create new order. Please contact admin site.';
-                // do something here
-                // .....
-
                 Mage::app()->getResponse()->setRedirect(Mage::getUrl('checkout/cart'));
                 Mage::app()->getResponse()->sendResponse();
                 Mage::getSingleton('core/session')->addError(Mage::helper('ewayrapid')->__('Your latest payment is being reviewed and you cannot place a new order temporarily. Please try again later.'));
@@ -58,6 +54,18 @@ class Eway_Rapid31_Model_Observer {
         if($fraud === 1) {
 
         }
+    }
+    
+    public function sales_order_invoice_save_after($observer)
+    {
+        try {
+            /* @var $order Magento_Sales_Model_Order_Invoice */
+            $this->_invoice = $observer->getEvent()->getInvoice();
+            $this->_invoice->sendEmail();
+        } catch (Mage_Core_Exception $e) {
+            Mage::log("Error sending invoice email: " . $e->getMessage());
+        }
+        return $this;
     }
 
     public function checkout_submit_all_after(Varien_Event_Observer $observer) {
