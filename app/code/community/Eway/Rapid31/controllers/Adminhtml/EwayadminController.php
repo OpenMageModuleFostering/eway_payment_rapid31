@@ -2,9 +2,8 @@
 /**
  * 
  */
-class Eway_Rapid31_Adminhtml_IndexController extends Mage_Adminhtml_Controller_Action {
+class Eway_Rapid31_Adminhtml_EwayadminController extends Mage_Adminhtml_Controller_Action {
     public function indexAction() {
-
     }
 
     public function massEwayAuthorisedAction() {

@@ -13,14 +13,14 @@ class Eway_Rapid31_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Sales_Ord
             'pending',
             array(
                 'label' => $this->__('Verify eWAY Order'),
-                'url'   => Mage::helper("adminhtml")->getUrl("ewayadmin/index/massVerifyEwayOrder"), //this should be the url where there will be mass operation
+                'url'   => Mage::helper("adminhtml")->getUrl("adminhtml/ewayadmin/massVerifyEwayOrder"), //this should be the url where there will be mass operation
                 'confirm'=> $this->__('Are you sure?')
             )
         )/*->addItem(
             'eway_authorised',
                 array(
                     'label' => 'eWAY Authorised',
-                    'url'   => Mage::helper("adminhtml")->getUrl("ewayadmin/index/massEwayAuthorised"), //this should be the url where there will be mass operation
+                    'url'   => Mage::helper("adminhtml")->getUrl("adminhtml/ewayadmin/massEwayAuthorised"), //this should be the url where there will be mass operation
                     'confirm'=> $this->__('Are you sure?')
                 )
             )*/;

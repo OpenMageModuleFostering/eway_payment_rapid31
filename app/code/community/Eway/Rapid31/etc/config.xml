@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Eway_Rapid31>
-            <version>1.3.1</version>
+            <version>1.3.2</version>
         </Eway_Rapid31>
     </modules>
     <global>
@@ -199,6 +199,8 @@
         </events>
 
     </frontend>
+    
+    <!--
     <admin>
         <routers>
             <ewayrapid_admin>
@@ -210,6 +212,20 @@
             </ewayrapid_admin>
         </routers>
     </admin>
+    -->
+    
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <eway_rapid31_adminhtml after="Mage_Adminhtml">Eway_Rapid31_Adminhtml</eway_rapid31_adminhtml>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+    
     <adminhtml>
         <translate>
             <modules>
