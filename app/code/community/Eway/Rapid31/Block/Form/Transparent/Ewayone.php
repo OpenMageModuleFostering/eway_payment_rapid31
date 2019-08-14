@@ -72,19 +72,23 @@ class Eway_Rapid31_Block_Form_Transparent_Ewayone extends Mage_Payment_Block_For
         return $model->checkCardName($card);
     }
 
-    public function getSaveCard(){
+    public function getSaveCard()
+    {
         return Mage::getStoreConfig('payment/ewayrapid_ewayone/save_card');
     }
 
-    public function getSaveText(){
+    public function getSaveText()
+    {
         return Mage::getStoreConfig('payment/ewayrapid_ewayone/save_text');
     }
 
-    public function getSaveDefaultCheck(){
+    public function getSaveDefaultCheck()
+    {
         return Mage::getStoreConfig('payment/ewayrapid_ewayone/save_card_checked');
     }
 
-    public function checkSaveCardAvailable(){
+    public function checkSaveCardAvailable()
+    {
         return Mage::helper('ewayrapid/customer')->getCurrentCustomer()
         || Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER;
     }

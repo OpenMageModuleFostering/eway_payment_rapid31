@@ -285,7 +285,7 @@
                                                         } else {
                                                             var payment_method = $RF(form, 'payment[method]');
                                                             var wireparams = {'paymentMethod': payment_method};
-                                                            url = '<?php echo Mage::getBaseUrl() . 'wirecard_checkout_page/processing/wirecard_checkout_pagecheckout/'; ?>';
+                                                            url = '<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . 'wirecard_checkout_page/processing/wirecard_checkout_pagecheckout/'; ?>';
                                                             var wirerequest = new Ajax.Request(
                                                                 qmoreIsIframe,
                                                                 {

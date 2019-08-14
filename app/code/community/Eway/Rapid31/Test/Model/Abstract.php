@@ -20,29 +20,29 @@ abstract class Eway_Rapid31_Test_Model_Abstract extends EcomDev_PHPUnit_Test_Cas
 
     public static function assertJsonMatch($json, $expectedValue, $exact = true)
     {
-        if(is_string($json)) {
+        if (is_string($json)) {
             $json = json_decode($json, true);
         }
 
-        if(is_string($expectedValue)) {
+        if (is_string($expectedValue)) {
             $expectedValue = json_decode($expectedValue, true);
         }
 
         // if the indexes don't match, return immediately
         $diff = array_diff_assoc($json, $expectedValue);
-        if(count($diff)) {
+        if (count($diff)) {
             self::fail("There are different items in input json: \n" . print_r($diff, true));
         }
 
-        if($exact) {
+        if ($exact) {
             $diff = array_diff_assoc($expectedValue, $json);
-            if(count($diff)) {
+            if (count($diff)) {
                 self::fail("There are different items in expected json: \n" . print_r($diff, true));
             }
         }
 
-        foreach($json as $k => $v) {
-            if(is_array($v)) {
+        foreach ($json as $k => $v) {
+            if (is_array($v)) {
                 self::assertJsonMatch($v, $expectedValue[$k], $exact);
             }
         }
@@ -94,7 +94,7 @@ abstract class Eway_Rapid31_Test_Model_Abstract extends EcomDev_PHPUnit_Test_Cas
     public function getDummyLineItemArray($count = 3)
     {
         $lineItems = array();
-        for($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $lineItems[] = $this->getDummyLineItem($i);
         }
 

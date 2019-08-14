@@ -52,7 +52,7 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
             $info->setTransparentSaved($data->getTransparentSaved());
         }
 
-        if($data->getSavedToken() == Eway_Rapid31_Model_Config::TOKEN_NEW) {
+        if ($data->getSavedToken() == Eway_Rapid31_Model_Config::TOKEN_NEW) {
             Mage::helper('ewayrapid')->clearSessionSharedpage();
             if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
                 && !$this->_isBackendOrder
@@ -69,7 +69,7 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
 
             $info->setSavedToken($data->getSavedToken());
             // Update token
-            if($data->getCcOwner()) {
+            if ($data->getCcOwner()) {
                 $info->setIsUpdateToken(true);
             }
         }
@@ -90,11 +90,10 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
     public function validate()
     {
         $info = $this->getInfoInstance();
-        if($info->getIsNewToken()) {
+        if ($info->getIsNewToken()) {
             parent::validate();
-        } else {
-            // TODO: Check if this token is still Active using GET /Customer endpoint.
         }
+        // TODO: Check if this token is still Active using GET /Customer endpoint.
 
         return $this;
     }
@@ -117,7 +116,6 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
                 Mage::getSingleton('core/session')->unsetData('ewayTransactionID');
                 return $this;
             } elseif ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT ) {
-                //$payment->setTransactionId(Mage::getSingleton('core/session')->getTransactionId());
                 Mage::getModel('ewayrapid/request_transparent')->setTransaction($payment);
                 return $this;
             }
@@ -130,9 +128,9 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
         $request = Mage::getModel('ewayrapid/request_token');
 
         $amount = round($amount * 100);
-        if($this->_isPreauthCapture($payment)) {
+        if ($this->_isPreauthCapture($payment)) {
             $previousCapture = $payment->lookupTransaction(false, Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE);
-            if($previousCapture) {
+            if ($previousCapture) {
                 $customer = Mage::getModel('customer/customer')->load($payment->getOrder()->getCustomerId());
                 Mage::helper('ewayrapid/customer')->setCurrentCustomer($customer);
 
@@ -170,7 +168,6 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
                 Mage::getSingleton('core/session')->unsetData('ewayTransactionID');
                 return $this;
             } elseif ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT) {
-                //$payment->setTransactionId(Mage::getSingleton('core/session')->getTransactionId());
                 Mage::getModel('ewayrapid/request_transparent')->setTransaction($payment);
                 return $this;
             }
@@ -241,7 +238,8 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
      */
     public function submitRecurringProfile(Mage_Payment_Model_Recurring_Profile $profile,
                                            Mage_Payment_Model_Info $paymentInfo
-    ) {
+    ) 
+    {
         $profile->setReferenceId(strtoupper(uniqid()));
         $profile->setState(Mage_Sales_Model_Recurring_Profile::STATE_ACTIVE);
     }

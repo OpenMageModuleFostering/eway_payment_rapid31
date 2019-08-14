@@ -82,8 +82,7 @@ class Eway_Rapid31_Test_Model_CustomerToken extends Eway_Rapid31_Test_Model_Abst
             ->setToken('1234567891')
             ->setExpMonth(1)
             ->setExpYear(2015)
-            ->setOwner('Hiep Ho 1')
-            ;
+            ->setOwner('Hiep Ho 1');
         $tokens[1] = $token;
 
         $token = Mage::getModel('ewayrapid/customer_token')
@@ -94,8 +93,7 @@ class Eway_Rapid31_Test_Model_CustomerToken extends Eway_Rapid31_Test_Model_Abst
             ->setToken('1234567892')
             ->setExpMonth(2)
             ->setExpYear(2015)
-            ->setOwner('Hiep Ho 2')
-            ;
+            ->setOwner('Hiep Ho 2');
         $tokens[2] = $token;
 
         $token = Mage::getModel('ewayrapid/customer_token')
@@ -106,8 +104,7 @@ class Eway_Rapid31_Test_Model_CustomerToken extends Eway_Rapid31_Test_Model_Abst
             ->setToken('1234567893')
             ->setExpMonth(3)
             ->setExpYear(2015)
-            ->setOwner('Hiep Ho 3')
-            ;
+            ->setOwner('Hiep Ho 3');
         $tokens[3] = $token;
 
         $savedTokens->setTokens($tokens);

@@ -2,23 +2,26 @@
 /**
  *
  */
-class Eway_Rapid31_Model_Observer {
+class Eway_Rapid31_Model_Observer
+{
 
     /* @var Magento_Sales_Model_Order_Invoice*/
-    var $_invoice;
+    public $invoice;
     
-    public function myCards() {
+    public function myCards()
+    {
 
     }
 
-    public function checkCustomerMark() {
-        if(Mage::getSingleton('customer/session')->isLoggedIn()) {
-            $fraud_enabled = Mage::getStoreConfig('payment/ewayrapid_general/block_fraud_customers');
+    public function checkCustomerMark() 
+    {
+        if (Mage::getSingleton('customer/session')->isLoggedIn()) {
+            $fraudEnabled = Mage::getStoreConfig('payment/ewayrapid_general/block_fraud_customers');
             $customer = Mage::getSingleton('customer/session')->getCustomer();
             $markFraud = $customer->getMarkFraud();
             $unblock = $customer->getBlockFraudCustomer();
-            if((int)$markFraud === 1
-                && $fraud_enabled
+            if ((int)$markFraud === 1
+                && $fraudEnabled
                 && (int)$unblock === 0
             ) {
                 Mage::app()->getResponse()->setRedirect(Mage::getUrl('checkout/cart'));
@@ -28,7 +31,7 @@ class Eway_Rapid31_Model_Observer {
             }
         }
     }
-
+    
     public function sales_order_save_before($observer) {
 
     }
@@ -55,24 +58,25 @@ class Eway_Rapid31_Model_Observer {
 
         }
     }
-    
+
     public function sales_order_invoice_save_after($observer)
     {
         try {
             /* @var $order Magento_Sales_Model_Order_Invoice */
-            $this->_invoice = $observer->getEvent()->getInvoice();
-            $this->_invoice->sendEmail();
+            $this->invoice = $observer->getEvent()->getInvoice();
+            $this->invoice->sendEmail();
         } catch (Mage_Core_Exception $e) {
             Mage::log("Error sending invoice email: " . $e->getMessage());
         }
         return $this;
     }
 
-    public function checkout_submit_all_after(Varien_Event_Observer $observer) {
+    public function checkout_submit_all_after(Varien_Event_Observer $observer) 
+    {
         $fraud = Mage::getSingleton('core/session')->getData('fraud');
         $comment = Mage::getSingleton('core/session')->getData('fraudMessage');
         // Read setting config enabled fraud or not
-        if($fraud === 1 && $order = $observer->getEvent()->getOrder()) {
+        if ($fraud === 1 && $order = $observer->getEvent()->getOrder()) {
             $order->setState('fraud');
             $order->setStatus('fraud');
             if ($comment) {
@@ -100,7 +104,8 @@ class Eway_Rapid31_Model_Observer {
      * Update eway transaction for order
      * @param Varien_Event_Observer $observer
      */
-    public function checkout_type_onepage_save_order_after(Varien_Event_Observer $observer) {
+    public function checkout_type_onepage_save_order_after(Varien_Event_Observer $observer) 
+    {
         $order = $observer->getData('order');
         $order->setEwayTransactionId($order->getPayment()->getTransactionId());
         $order->save();
@@ -218,13 +223,14 @@ class Eway_Rapid31_Model_Observer {
      * @param array $methodCode
      * @return array
      */
-    protected function _loadProfileByMethod($methodCode = ['ewayrapid_saved', 'ewayrapid_ewayone'])
+    protected function _loadProfileByMethod($methodCode = array('ewayrapid_saved', 'ewayrapid_ewayone'))
     {
         $modelRecurringProfile = Mage::getModel('sales/recurring_profile')->getCollection()
             ->addFieldToFilter('method_code', array('in' => $methodCode))
             ->addFieldToFilter('state', 'active')
             ->addFieldToFilter('additional_info', array('notnull' => true))
-            ->addFieldToFilter('period_max_cycles', array(
+            ->addFieldToFilter(
+                'period_max_cycles', array(
                     array('null' => true),
                     array('gt' => 0)
                 )
@@ -288,6 +294,5 @@ class Eway_Rapid31_Model_Observer {
                 }
             }
         }
-        return;
     }
 }

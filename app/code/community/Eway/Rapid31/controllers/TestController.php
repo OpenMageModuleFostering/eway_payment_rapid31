@@ -7,8 +7,8 @@ class Eway_Rapid31_TestController extends Mage_Core_Controller_Front_Action
     public function querySuspectFraudAction()
     {
 
-        $base_path = Mage::getBaseDir('base');
-        $file = $base_path . DS .'var' . DS . 'report' . DS .'people.txt';
+        $basePath = Mage::getBaseDir('base');
+        $file = $basePath . DS .'var' . DS . 'report' . DS .'people.txt';
         // The new person to add to the file
         $person = "John Smith " . rand(1, 9999) . "\n";
         // Write the contents to the file,
@@ -27,9 +27,9 @@ class Eway_Rapid31_TestController extends Mage_Core_Controller_Front_Action
             if ($transactionId) {
                 $result = $this->__getTransaction($transactionId);
                 // Check return data
-                $result_decode = json_decode($result);
+                $resultDecode = json_decode($result);
 
-                $trans = $result_decode->Transactions;
+                $trans = $resultDecode->Transactions;
                 $tranId = $trans[0]->TransactionID;
 
                 if ($trans[0]->ResponseMessage == 'A2000') { // Success - Fraud order has been approved

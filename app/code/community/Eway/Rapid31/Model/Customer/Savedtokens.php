@@ -25,7 +25,7 @@ class Eway_Rapid31_Model_Customer_Savedtokens extends Eway_Rapid31_Model_JsonSer
      */
     public function decodeJSON($json)
     {
-        if(is_string($json)) {
+        if (is_string($json)) {
             $json = json_decode($json, true);
         }
         /*
@@ -52,11 +52,11 @@ class Eway_Rapid31_Model_Customer_Savedtokens extends Eway_Rapid31_Model_JsonSer
 
         $this->addData($json);
         $tokens = $this->getTokens();
-        if(is_array($tokens)) {
-            foreach($tokens as $id => $token) {
+        if (is_array($tokens)) {
+            foreach ($tokens as $id => $token) {
                 $tokenModel = Mage::getModel('ewayrapid/customer_token')->addData($token);
                 /* @var Eway_Rapid31_Model_Customer_Token $tokenModel */
-                if($address = $tokenModel->getAddress()) {
+                if ($address = $tokenModel->getAddress()) {
                     $tokenModel->setAddress(Mage::getModel('ewayrapid/field_customer')->addData($address));
                 }
                 $tokens[$id] = $tokenModel;
@@ -74,7 +74,9 @@ class Eway_Rapid31_Model_Customer_Savedtokens extends Eway_Rapid31_Model_JsonSer
      */
     public function getTokenById($id)
     {
-        if(($tokens = $this->getTokens()) && isset($tokens[$id]) && $tokens[$id] instanceof Eway_Rapid31_Model_Customer_Token) {
+        if (($tokens = $this->getTokens()) 
+                && isset($tokens[$id]) 
+                && $tokens[$id] instanceof Eway_Rapid31_Model_Customer_Token) {
             return $tokens[$id];
         } else {
             Mage::throwException(Mage::helper('ewayrapid')->__('Customer token does not exist.'));

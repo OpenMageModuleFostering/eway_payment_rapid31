@@ -24,7 +24,7 @@
  */
 class Eway_Rapid31_Model_Response extends Varien_Object
 {
-    private $_codes = array(
+    protected $_codes = array(
         'F7000' => 'Undefined Fraud',
         'V5000' => 'Undefined System',
         'A0000' => 'Undefined Approved',
@@ -210,9 +210,9 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         'S5099' => 'Incomplete (Access Code in progress/incomplete)',
         'S5010' => 'Unknown error returned by gateway',
     );
-    private $_isSuccess = false;
+    protected $_isSuccess = false;
 
-    private $_messageCode = array(
+    protected $_messageCode = array(
         'F7000' => 'Undefined Fraud Error',
         'F7001' => 'Challenged Fraud',
         'F7002' => 'Country Match Fraud',
@@ -254,17 +254,18 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         'F9113' => 'Card issuing country differs from IP address country'
     );
 
-    public function getMessage() {
-        if($this->getData('Message')) {
+    public function getMessage() 
+    {
+        if ($this->getData('Message')) {
             return $this->getData('Message');
         }
 
         $messageCode = $this->getResponseMessage();
-        if(empty($messageCode) && ($errors = $this->getErrors())) {
+        if (empty($messageCode) && ($errors = $this->getErrors())) {
             $messageCode = $errors[0];
         }
 
-        if(empty($messageCode)) {
+        if (empty($messageCode)) {
             return Mage::helper('ewayrapid')->__("Unknown");
         }
 
@@ -277,7 +278,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
 
     public function isSuccess($flag = null)
     {
-        if($flag !== null) {
+        if ($flag !== null) {
             $this->_isSuccess = $flag;
         }
 
@@ -294,18 +295,18 @@ class Eway_Rapid31_Model_Response extends Varien_Object
     {
         $json = json_decode($response, true);
         $this->addData($json);
-        if(!empty($json['Customer']) && is_array($json['Customer'])) {
+        if (!empty($json['Customer']) && is_array($json['Customer'])) {
             $this->_setIfNotEmpty($json['Customer'], 'TokenCustomerID');
-            if(!empty($json['Customer']['CardDetails']) && !empty($json['Customer']['CardDetails']['Number'])) {
+            if (!empty($json['Customer']['CardDetails']) && !empty($json['Customer']['CardDetails']['Number'])) {
                 $this->setData('CcLast4', substr($json['Customer']['CardDetails']['Number'], -4));
             }
         }
 
-        if(!empty($json['Errors'])) {
+        if (!empty($json['Errors'])) {
             $this->setErrors(explode(',', $json['Errors']));
         }
 
-        if(isset($json['TransactionStatus'])) {
+        if (isset($json['TransactionStatus'])) {
             // Use TransactionStatus if it's presented in response
             $this->isSuccess((bool)$this->getTransactionStatus());
 
@@ -313,15 +314,13 @@ class Eway_Rapid31_Model_Response extends Varien_Object
             if (isset($json['ResponseMessage']) && $this->isSuccess()) {
                 $codeMessage = str_replace(' ', '', $json['ResponseMessage']);
                 $codeMessage = explode(',', $codeMessage);
-                //$codeMessage = array_flip($codeMessage);
 
-                //$result = array_intersect_key($this->_messageCode, $codeMessage);
                 $result = preg_grep("/^F.*/", $codeMessage);
                 if (!empty($result)) {
                     $codes = array_flip($result);
                     $resultMatched = array_intersect_key($this->_messageCode, $codes);
                     $resultDefault = array_fill_keys(array_keys($codes), "Unknown fraud rule");
-                    $resultMessages = array_merge($resultDefault,$resultMatched);
+                    $resultMessages = array_merge($resultDefault, $resultMatched);
                     Mage::getSingleton('core/session')->setData('fraud', 1);
                     $fraudMessage = implode(', ', $resultMessages);
                     Mage::getSingleton('core/session')->setData('fraudMessage', $fraudMessage);
@@ -332,7 +331,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
             $this->isSuccess(!$this->getErrors());
 
             // Catch empty response
-            if(!isset($json['TransactionStatus'])
+            if (!isset($json['TransactionStatus'])
                     && !isset($json['TransactionID'])
                     && !isset($json['Customer']['TokenCustomerID'])
                     && !isset($json['AccessCode'])
@@ -350,9 +349,9 @@ class Eway_Rapid31_Model_Response extends Varien_Object
      * @param array $json
      * @param string $key
      */
-    private function _setIfNotEmpty($json, $key)
+    protected function _setIfNotEmpty($json, $key)
     {
-        if(!empty($json[$key])) {
+        if (!empty($json[$key])) {
             $this->setData($key, $json[$key]);
         }
     }
@@ -377,11 +376,11 @@ class Eway_Rapid31_Model_Response extends Varien_Object
     {
         $results = $message;
         $found = false;
-        if($this->_codes) {
+        if ($this->_codes) {
             foreach ($this->_codes as $code => $mess) {
-                if(strpos($message, $code) !== false) {
+                if (strpos($message, $code) !== false) {
                     $found = true;
-                    $results = str_replace( $results, $code, $mess );
+                    $results = str_replace($results, $code, $mess);
                 }
             }
         }
@@ -397,7 +396,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
      *
      * @param array $result transaction result from eWAY
      */
-    private function _checkfraud($result)
+    protected function _checkfraud($result)
     {
         if (isset($result['FraudAction']) && !empty($result['FraudAction'])) {
 
@@ -415,7 +414,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
                 // Convert to text and signal fraud
                 $resultMatched = array_intersect_key($this->_messageCode, $codes);
                 $resultDefault = array_fill_keys(array_keys($codes), "Unknown fraud rule");
-                $resultMessages = array_merge($resultDefault,$resultMatched);
+                $resultMessages = array_merge($resultDefault, $resultMatched);
                 Mage::getSingleton('core/session')->setData('fraud', 1);
                 $fraudMessage = implode(', ', $resultMessages);
                 Mage::getSingleton('core/session')->setData('fraudMessage', $fraudMessage);

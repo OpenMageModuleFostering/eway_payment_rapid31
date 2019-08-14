@@ -3,7 +3,8 @@ class Eway_Rapid31_Test_Model_Response extends EcomDev_PHPUnit_Test_Case
 {
     public function testResponse()
     {
-        $response = Mage::getModel('ewayrapid/response')->decodeJSON('
+        $response = Mage::getModel('ewayrapid/response')->decodeJSON(
+            '
             {
              "AuthorisationCode": "000000",
              "ResponseCode": "58",
@@ -60,7 +61,8 @@ class Eway_Rapid31_Test_Model_Response extends EcomDev_PHPUnit_Test_Case
              },
              "Errors": null
             }
-        ');
+        '
+        );
 
         $this->assertEquals('000000', $response->getAuthorisationCode());
         $this->assertEquals('58', $response->getResponseCode());

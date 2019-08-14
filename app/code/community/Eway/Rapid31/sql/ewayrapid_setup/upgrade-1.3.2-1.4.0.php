@@ -5,7 +5,8 @@ $installer = $this;
 $installer->startSetup();
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/order_payment'),
+    ->addColumn(
+        $installer->getTable('sales/order_payment'),
         'fraud_action',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -16,7 +17,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/quote_payment'),
+    ->addColumn(
+        $installer->getTable('sales/quote_payment'),
         'fraud_action',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -27,7 +29,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/order_payment'),
+    ->addColumn(
+        $installer->getTable('sales/order_payment'),
         'fraud_codes',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -38,7 +41,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/quote_payment'),
+    ->addColumn(
+        $installer->getTable('sales/quote_payment'),
         'fraud_codes',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -49,7 +53,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/order_payment'),
+    ->addColumn(
+        $installer->getTable('sales/order_payment'),
         'transaction_captured',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_INTEGER,
@@ -60,7 +65,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/quote_payment'),
+    ->addColumn(
+        $installer->getTable('sales/quote_payment'),
         'transaction_captured',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_INTEGER,
@@ -71,7 +77,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/order_payment'),
+    ->addColumn(
+        $installer->getTable('sales/order_payment'),
         'beagle_score',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -82,7 +89,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/quote_payment'),
+    ->addColumn(
+        $installer->getTable('sales/quote_payment'),
         'beagle_score',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -93,7 +101,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/order_payment'),
+    ->addColumn(
+        $installer->getTable('sales/order_payment'),
         'beagle_verification',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,
@@ -104,7 +113,8 @@ $installer->getConnection()
     );
 
 $installer->getConnection()
-    ->addColumn($installer->getTable('sales/quote_payment'),
+    ->addColumn(
+        $installer->getTable('sales/quote_payment'),
         'beagle_verification',
         array(
             'type' => Varien_Db_Ddl_Table::TYPE_TEXT,

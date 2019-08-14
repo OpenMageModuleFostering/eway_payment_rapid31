@@ -1,8 +1,10 @@
 <?php
 
-class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtml_Controller_Action {
+class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtml_Controller_Action
+{
 
-    protected function _isAllowed() {
+    protected function _isAllowed() 
+    {
         return true;
     }
 
@@ -15,14 +17,14 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
             'success' => false
         );
 
-        if($tokenId && is_numeric($tokenId) && $tokenId > 0){
+        if ($tokenId && is_numeric($tokenId) && $tokenId > 0) {
             $customerId = $request->getParam('customer_id');
             $customer = Mage::getModel('customer/customer')->load($customerId);
             Mage::register('current_customer', $customer);
             $this->loadLayout();
             $this->getLayout()->getBlock('root')->setData('token_id', $tokenId);
             $this->renderLayout();
-        }else{
+        } else {
             $this->loadLayout();
             $this->getLayout()->getBlock('root')->setData('token_id', 0);
             $this->renderLayout();
@@ -36,7 +38,8 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
         $this->_forward('edit');
     }
 
-    public function saveAction(){
+    public function saveAction()
+    {
 
         $request = $this->getRequest();
         $params = $request->getParam('ewayrapid');
@@ -94,7 +97,8 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
         $this->renderLayout();
     }
 
-    public function deleteAction(){
+    public function deleteAction()
+    {
         $request = $this->getRequest();
         $tokenId = $request->getParam('token_id');
         $message = array(
@@ -102,7 +106,7 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
             'success' => false
         );
 
-        if($tokenId && is_numeric($tokenId) && $tokenId > 0){
+        if ($tokenId && is_numeric($tokenId) && $tokenId > 0) {
             $customerId = $request->getParam('customer_id');
             $customer = Mage::getModel('customer/customer')->load($customerId);
             Mage::register('current_customer', $customer);
@@ -111,13 +115,14 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
             $message['message'] = $this->__('Card deleted');
             $this->getResponse()->setBody(json_encode($message));
             return;
-        }else{
+        } else {
             $this->getResponse()->setBody(json_encode($message));
             return;
         }
     }
 
-    public function getAccessCodeAction(){
+    public function getAccessCodeAction()
+    {
         try{
             $request = $this->getRequest();
             $params = $request->getParam('ewayrapid');
@@ -211,7 +216,8 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
         }
     }
 
-    public function savetokenAction(){
+    public function savetokenAction()
+    {
         $req = $this->getRequest();
 
         $customerId = $req->getParam('customer_id');
@@ -225,7 +231,7 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
         $accessCode = $req->getParam('AccessCode');
         $ccType = $req->getParam('ccType');
         $expYear = $req->getParam('expYear');
-        $token_id = $req->getParam('token_id');
+        $tokenId = $req->getParam('token_id');
 
         if (isset($accessCode)) {
             $apiRequest = Mage::getModel('ewayrapid/request_token');
@@ -233,7 +239,7 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
             $result = $apiRequest->getInfoByAccessCode($accessCode);
             $data = $result->getData();
 
-            $token_customer_id = $data['TokenCustomerID'];
+            $tokenCustomerId = $data['TokenCustomerID'];
 
             /**
              * TEST TOKEN ID NULL
@@ -243,15 +249,15 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
              * END TEST
              */
 
-            if (isset($token_customer_id) && !empty($token_customer_id)) {
+            if (isset($tokenCustomerId) && !empty($tokenCustomerId)) {
                 $apiRequest = Mage::getModel('ewayrapid/request_token');
                 $street1 = $req->getParam('street1');
                 $street2 = $req->getParam('street2');
                 $cardData = array(
-                    'token' => $token_customer_id,
+                    'token' => $tokenCustomerId,
                     'ccType' => $ccType,
                     'expYear' => $expYear,
-                    'token_id' => $token_id,
+                    'token_id' => $tokenId,
                     'startMonth' => $req->getParam('startMonth'),
                     'startYear' => $req->getParam('startYear'),
                     'issueNumber' => $req->getParam('issueNumber'),
@@ -261,7 +267,7 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
                 // Retrieve data card by token key and save information
                 $apiRequest->saveInfoByTokenId($cardData);
                 if ($req->getParam('is_default')) {
-                    Mage::helper('ewayrapid/customer')->setDefaultToken($token_id ? $token_id : Mage::helper('ewayrapid/customer')->getLastTokenId());
+                    Mage::helper('ewayrapid/customer')->setDefaultToken($tokenId ? $tokenId : Mage::helper('ewayrapid/customer')->getLastTokenId());
                 }
                 $this->loadLayout();
                 $this->renderLayout();
@@ -290,9 +296,9 @@ class Eway_Rapid31_Adminhtml_Ewayrapid_SavedcardController extends Mage_Adminhtm
         if ($errors !== true && is_array($errors)) {
             Mage::throwException(implode("\n", $errors));
         }
-        if($params && isset($params['payment'])){
+        if ($params && isset($params['payment'])) {
             $infoInstance = new Varien_Object($params['payment']);
-        }else{
+        } else {
             $infoInstance = new Varien_Object();
         }
 

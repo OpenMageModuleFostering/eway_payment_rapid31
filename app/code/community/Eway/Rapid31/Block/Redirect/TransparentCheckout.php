@@ -2,15 +2,15 @@
 
 class Eway_Rapid31_Block_Redirect_TransparentCheckout extends Mage_Core_Block_Template
 {
-    protected $methodPayment;
-    protected $transMethod;
+    protected $_methodPayment;
+    protected $_transMethod;
 
     public function _construct()
     {
-        $this->methodPayment  = Mage::getSingleton('core/session')->getMethod();
-        $this->transMethod    = Mage::getSingleton('core/session')->getTransparentNotsaved();
-        if(!$this->transMethod) {
-            $this->transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
+        $this->_methodPayment  = Mage::getSingleton('core/session')->getMethod();
+        $this->_transMethod    = Mage::getSingleton('core/session')->getTransparentNotsaved();
+        if (!$this->_transMethod) {
+            $this->_transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
         }
         $this->setTemplate('ewayrapid/redirect/transparent_checkout.phtml')->toHtml();
     }

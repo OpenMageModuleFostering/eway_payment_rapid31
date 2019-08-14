@@ -39,15 +39,15 @@ class Eway_Rapid31_Model_Config
     const ORDER_STATUS_AUTHORISED       = 'eway_authorised';
     const ORDER_STATUS_CAPTURED         = 'eway_captured';
 
-    private $_isSandbox                 = true;
-    private $_isDebug                   = false;
-    private $_liveUrl                   = '';
-    private $_liveApiKey                = '';
-    private $_livePassword              = '';
-    private $_sandboxUrl                = '';
-    private $_sandboxApiKey             = '';
-    private $_sandboxPassword           = '';
-    private $_isEnableSSLVerification   = false;
+    protected $_isSandbox                 = true;
+    protected $_isDebug                   = false;
+    protected $_liveUrl                   = '';
+    protected $_liveApiKey                = '';
+    protected $_livePassword              = '';
+    protected $_sandboxUrl                = '';
+    protected $_sandboxApiKey             = '';
+    protected $_sandboxPassword           = '';
+    protected $_isEnableSSLVerification   = false;
 
     public function __construct()
     {
@@ -64,7 +64,7 @@ class Eway_Rapid31_Model_Config
 
     public function isSandbox($sandbox = null)
     {
-        if($sandbox !== null) {
+        if ($sandbox !== null) {
             $this->_isSandbox = (bool) $sandbox;
         }
 
@@ -73,7 +73,7 @@ class Eway_Rapid31_Model_Config
 
     public function isDebug($debug = null)
     {
-        if($debug !== null) {
+        if ($debug !== null) {
             $this->_isDebug = (bool) $debug;
         }
 
@@ -84,7 +84,7 @@ class Eway_Rapid31_Model_Config
     {
         $url = $this->isSandbox() ? $this->_sandboxUrl : $this->_liveUrl;
         $url = rtrim($url, '/') . '/';
-        if($action) {
+        if ($action) {
             $url .= $action;
         }
 
@@ -164,19 +164,22 @@ class Eway_Rapid31_Model_Config
         return Mage::getStoreConfig('payment/ewayrapid_general/guess_order');
     }
 
-    public function getVisaCheckoutApiKey(){
+    public function getVisaCheckoutApiKey()
+    {
         return Mage::helper('core')->decrypt(Mage::getStoreConfig('payment/ewayrapid_general/visa_checkout_api_key'));
     }
 
-    public function getVisaCheckoutEnable(){
+    public function getVisaCheckoutEnable()
+    {
         return Mage::getStoreConfig('payment/ewayrapid_general/enable_visa_checkout')
         && Mage::getStoreConfig('payment/ewayrapid_general/visa_checkout_api_key') != '';
     }
 
-    public function getVisaCheckoutSDK(){
-        if(!$this->getVisaCheckoutEnable()){
+    public function getVisaCheckoutSDK()
+    {
+        if (!$this->getVisaCheckoutEnable()) {
             return false;
-        }else{
+        } else {
             return $this->_isSandbox
                 ? 'https://sandbox-assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js'
                 : 'https://assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js';

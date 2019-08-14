@@ -13,7 +13,8 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
 
     protected $_checkoutType = 'ewayrapid/request_sharedpage';
 
-    protected function _isAllowed() {
+    protected function _isAllowed() 
+    {
         return true;
     }
 
@@ -38,9 +39,11 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
         $quote = $this->_getOrderCreateModel()->getQuote();
 
         try {
-            $checkout = Mage::getSingleton($this->_checkoutType, array(
+            $checkout = Mage::getSingleton(
+                $this->_checkoutType, array(
                 'quote' => $quote
-            ));
+                )
+            );
 
             $redirectUrl = $this->getUrl('*/*/ewaysaveiframeorder');
             //Init AccessCode
@@ -54,9 +57,9 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
             $savedToken = $paymentData['saved_token'];
             $saveCard = (isset($paymentData['save_card']) ? $paymentData['save_card'] : '');
 
-            if($savedToken && is_numeric($savedToken)) {
+            if ($savedToken && is_numeric($savedToken)) {
                 $redirectParams['saved_token'] = $savedToken;
-            } elseif($saveCard) {
+            } elseif ($saveCard) {
                 $redirectParams['newToken'] = 1;
             }
 
@@ -104,15 +107,17 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
             $beagleVerification = array();
 
             $quote = $orderModel->getQuote();
-            $this->_checkout = $this->_checkout = Mage::getSingleton($this->_checkoutType, array(
+            $this->_checkout = $this->_checkout = Mage::getSingleton(
+                $this->_checkoutType, array(
                 'quote' => $quote
-            ));
+                )
+            );
 
             $response = $this->_checkout->getInfoByAccessCode($accessCode);
             // Get Fraud Information
-            if($response->isSuccess()){
+            if ($response->isSuccess()) {
                 $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                if($transaction) {
+                if ($transaction) {
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                     $captured = $transaction[0]['TransactionCaptured'];
@@ -120,10 +125,10 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
                 }
             }
 
-            if($response->getData('BeagleVerification')){
+            if ($response->getData('BeagleVerification')) {
                 $beagleVerification = $response->getData('BeagleVerification');
             }
-            if($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0){
+            if ($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0) {
                 $beagleScore = $response->getData('BeagleScore');
             }
 
@@ -131,27 +136,31 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
                 if ($response->getTokenCustomerID()) {
                     $response = $this->_checkout->saveTokenById($response, $editToken);
                     $response = $this->_processPayment($response);
-                    if($response->getData('BeagleVerification')){
+                    if ($response->getData('BeagleVerification')) {
                         $beagleVerification = $response->getData('BeagleVerification');
                     }
-                    if($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0){
+                    if ($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0) {
                         $beagleScore = $response->getData('BeagleScore');
                     }
                 } else {
-                    Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction. Please try again. (Error message: %s)',
-                        $response->getMessage()));
+                    Mage::throwException(
+                        Mage::helper('ewayrapid')->__(
+                            'An error occurred while making the transaction. Please try again. (Error message: %s)',
+                            $response->getMessage()
+                        )
+                    );
                 }
             }
             if ($response->isSuccess()) {
 
                 // Save fraud information
-                if(is_null($fraudAction)){
+                if (is_null($fraudAction)) {
                     $fraudAction = $response->getFraudAction();
                 }
-                if(is_null($fraudCodes)){
+                if (is_null($fraudCodes)) {
                     $fraudCodes = $response->getFraudCodes();
                 }
-                if(is_null($captured)){
+                if (is_null($captured)) {
                     $captured = $response->getTransactionCaptured();
                 }
 
@@ -166,8 +175,12 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
 
                 Mage::getSingleton('core/session')->setData('ewayTransactionID', $response->getTransactionID());
             } else {
-                Mage::throwException(Mage::helper('ewayrapid')->__('Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
-                    $response->getMessage()));
+                Mage::throwException(
+                    Mage::helper('ewayrapid')->__(
+                        'Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
+                        $response->getMessage()
+                    )
+                );
             }
 
             $order = $orderModel->createOrder();
@@ -217,9 +230,9 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
             $beagleScore = $response->getBeagleScore();
 
             // Get Fraud Information
-            if($response->isSuccess()){
+            if ($response->isSuccess()) {
                 $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                if($transaction) {
+                if ($transaction) {
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                     $captured = $transaction[0]['TransactionCaptured'];
@@ -233,16 +246,16 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
                 $response = $this->_checkout->doCapturePayment($response);
 
                 // Reload Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
-                        if($transaction[0]['FraudAction']){
+                    if ($transaction) {
+                        if ($transaction[0]['FraudAction']) {
                             $fraudAction = $transaction[0]['FraudAction'];
                         }
-                        if(Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage'])){
+                        if (Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage'])) {
                             $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         }
-                        if($transaction[0]['TransactionCaptured']){
+                        if ($transaction[0]['TransactionCaptured']) {
                             $captured = $transaction[0]['TransactionCaptured'];
                         }
                         unset($transaction);
@@ -255,9 +268,9 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
                 $response = $this->_checkout->doAuthorisation($response);
 
                 // Get Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
+                    if ($transaction) {
                         $fraudAction = $transaction[0]['FraudAction'];
                         $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         $captured = $transaction[0]['TransactionCaptured'];
@@ -268,9 +281,9 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
                 $response = $this->_checkout->doTransaction($response);
 
                 // Get Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
+                    if ($transaction) {
                         $fraudAction = $transaction[0]['FraudAction'];
                         $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         $captured = $transaction[0]['TransactionCaptured'];
@@ -280,11 +293,15 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
             }
         }
         if (!$response->isSuccess()) {
-            Mage::throwException(Mage::helper('ewayrapid')->__('Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
+                    $response->getMessage()
+                )
+            );
         }
 
-        if($response->getBeagleScore() === null){
+        if ($response->getBeagleScore() === null) {
             $response->setBeagleScore($beagleScore);
         }
         $response->setFraudAction($fraudAction);
@@ -296,8 +313,10 @@ class Eway_Rapid31_Adminhtml_Sales_Order_CreateController extends Mage_Adminhtml
     private function _initCheckout()
     {
         $quote = $this->_getOrderCreateModel()->getQuote();
-        $this->_checkout = Mage::getSingleton($this->_checkoutType, array(
+        $this->_checkout = Mage::getSingleton(
+            $this->_checkoutType, array(
             'quote' => $quote
-        ));
+            )
+        );
     }
 }

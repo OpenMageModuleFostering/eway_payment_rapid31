@@ -29,12 +29,12 @@ class Eway_Rapid31_Block_Info_Sharedpage_Saved extends Mage_Payment_Block_Info
         $info = $this->getInfo();
         /* @var Mage_Sales_Model_Order_Payment $info */
         $order = $info->getOrder();
-        if($order->getCustomerIsGuest()) {
+        if ($order->getCustomerIsGuest()) {
             return '';
         }
 
         Mage::helper('ewayrapid')->unserializeInfoInstace($info);
-        if(!$info->getSavedToken()) {
+        if (!$info->getSavedToken()) {
             return '';
         }
 

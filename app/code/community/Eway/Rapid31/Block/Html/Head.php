@@ -62,7 +62,8 @@ class Eway_Rapid31_Block_Html_Head extends Mage_Adminhtml_Block_Page_Head
         $href   = $itemName;
         switch ($itemType) {
             case 'rss':
-                $lines[$itemIf]['other'][] = sprintf('<link href="%s"%s rel="alternate" type="application/rss+xml" />',
+                $lines[$itemIf]['other'][] = sprintf(
+                    '<link href="%s"%s rel="alternate" type="application/rss+xml" />',
                     $href, $params
                 );
                 break;

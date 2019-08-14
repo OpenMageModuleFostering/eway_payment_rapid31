@@ -23,7 +23,7 @@ class Eway_Rapid31_Block_Form_Direct_Saved extends Mage_Payment_Block_Form_Cc
         $tokenList['default_token'] = Mage::helper('ewayrapid/customer')->getDefaultToken();
 
         $tokenListJson = array();
-        foreach($tokenList['tokens'] as $id => $token) {
+        foreach ($tokenList['tokens'] as $id => $token) {
             /* @var Eway_Rapid31_Model_Customer_Token $token */
             $tokenListJson[] = "\"{$id}\":{$token->jsonSerialize()}";
         }

@@ -11,8 +11,7 @@ class Eway_Rapid31_Block_Customer_Edit extends Mage_Directory_Block_Data
         }
         if ($this->isEdit()) {
             $title = Mage::helper('customer')->__('Edit Credit Card');
-        }
-        else {
+        } else {
             $title = Mage::helper('customer')->__('Add New Credit Card');
         }
         return $title;
@@ -23,12 +22,12 @@ class Eway_Rapid31_Block_Customer_Edit extends Mage_Directory_Block_Data
      */
     public function getCurrentToken()
     {
-        if(Mage::getSingleton('customer/session')->getTokenInfo()) {
+        if (Mage::getSingleton('customer/session')->getTokenInfo()) {
             $this->_currentToken = Mage::getSingleton('customer/session')->getTokenInfo();
             Mage::getSingleton('customer/session')->setTokenInfo(null);
         }
 
-        if(is_null($this->_currentToken)) {
+        if (is_null($this->_currentToken)) {
             $this->_currentToken = Mage::registry('current_token') ? Mage::registry('current_token') : Mage::getModel('ewayrapid/customer_token');
         }
 

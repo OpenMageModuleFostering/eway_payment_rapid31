@@ -17,14 +17,14 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         // Save fraud information
 
         $transaction = $this->getTransaction($response['TransactionID']);
-        if($transaction) {
+        if ($transaction) {
             $fraudAction = $transaction[0]['FraudAction'];
             $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
             $captured = $transaction[0]['TransactionCaptured'];
             unset($transaction);
         }
 
-        if($response->isSuccess()) {
+        if ($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             $payment->setCcLast4($response->getCcLast4());
             $beagleScore = $response->getBeagleScore() && $response->getData('BeagleScore') > 0 ? $response->getBeagleScore() : '';
@@ -35,8 +35,12 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
             $payment->setTransactionCaptured($captured);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while making the transaction. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -56,14 +60,14 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         // Save fraud information
 
         $transaction = $this->getTransaction($response['TransactionID']);
-        if($transaction) {
+        if ($transaction) {
             $fraudAction = $transaction[0]['FraudAction'];
             $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
             $captured = $transaction[0]['TransactionCaptured'];
             unset($transaction);
         }
 
-        if($response->isSuccess()) {
+        if ($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             $payment->setIsTransactionClosed(0);
             $beagleScore = $response->getBeagleScore() && $response->getData('BeagleScore') > 0 ? $response->getBeagleScore() : '';
@@ -78,8 +82,12 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
             if ($payment->getIsRecurring()) {
                 Mage::getSingleton('core/session')->setData('errorMessage', $response->getMessage());
             }
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while doing the authorisation. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while doing the authorisation. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -102,7 +110,7 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount)
             ->setCurrencyCode($order->getBaseCurrencyCode());
-        if($invoice && $invoice->getIncrementId()) {
+        if ($invoice && $invoice->getIncrementId()) {
             $paymentParam->setInvoiceNumber($invoice->getIncrementId())
                 ->setInvoiceReference($invoice->getIncrementId())
                 ->setInvoiceDescription(Mage::helper('ewayrapid')->__('Invoice created from Magento'));
@@ -112,15 +120,19 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
 
         $response = $this->_doRapidAPI('CapturePayment');
 
-        if($response->isSuccess()) {
+        if ($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             return $this;
         } else {
             if ($payment->getIsRecurring()) {
                 Mage::getSingleton('core/session')->setData('errorMessage', $response->getMessage());
             }
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while doing the capture. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while doing the capture. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -142,7 +154,7 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
 
         $invoice = ($creditMemo ? $creditMemo->getInvoice() : null);
         /* @var Mage_Sales_Model_Order_Invoice $invoice */
-        if(!$invoice || !$invoice->getTransactionId()) {
+        if (!$invoice || !$invoice->getTransactionId()) {
             Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while doing the online refund: Invoice or transaction does not exist.'));
         }
 
@@ -150,11 +162,11 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $paymentParam->setTotalAmount($amount)
             ->setCurrencyCode($order->getBaseCurrencyCode())
             ->setTransactionID($invoice->getTransactionId());
-        if($creditMemo && $creditMemo->getIncrementId()) {
+        if ($creditMemo && $creditMemo->getIncrementId()) {
             $paymentParam->setInvoiceDescription("Creditmemo ID " . $creditMemo->getIncrementId());
         }
 
-        if($invoice && $invoice->getIncrementId()) {
+        if ($invoice && $invoice->getIncrementId()) {
             $paymentParam->setInvoiceNumber($invoice->getIncrementId())
                 ->setInvoiceReference($invoice->getIncrementId());
         }
@@ -162,12 +174,16 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
 
         $response = $this->_doRapidAPI('Transaction/' . $invoice->getTransactionId() . '/Refund');
 
-        if($response->isSuccess()) {
+        if ($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while doing the refund. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while doing the refund. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -186,13 +202,17 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $this->setTransactionId($transactionId);
         $response = $this->_doRapidAPI('CancelAuthorisation');
 
-        if($response->isSuccess()) {
+        if ($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             $payment->setIsTransactionClosed(1);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while doing the cancel. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while doing the cancel. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
 
     }
@@ -222,10 +242,10 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
             }
         }
 
-        $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
-        if(Mage::helper('ewayrapid')->isBackendOrder()) {
+        if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
+            $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
@@ -239,21 +259,21 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         // add InvoiceDescription and InvoiceReference
         $config = Mage::getModel('ewayrapid/config');
 
-        if($config->shouldPassingInvoiceDescription()){
+        if ($config->shouldPassingInvoiceDescription()) {
             $invoiceDescription = '';
-            foreach($order->getAllVisibleItems() as $item){
+            foreach ($order->getAllVisibleItems() as $item) {
                 // Check in case multi-shipping
                 if (!$item->getQuoteParentItemId()) {
                     $invoiceDescription .= (int) $item->getQtyOrdered() . ' x ' .$item->getName() . ', ';
                 }
             }
-            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = trim($invoiceDescription, ', ');
             $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
 
             $paymentParam->setInvoiceDescription($invoiceDescription);
         }
 
-        if($config->shouldPassingGuessOrder()){
+        if ($config->shouldPassingGuessOrder()) {
             $paymentParam->setInvoiceReference($order->getIncrementId());
         }
 
@@ -305,10 +325,10 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
             $this->setShippingAddress($shippingParam);
         }
 
-        if($methodInstance->getConfigData('transfer_cart_items')) {
+        if ($methodInstance->getConfigData('transfer_cart_items')) {
             $orderItems = $order->getAllVisibleItems();
             $lineItems = array();
-            foreach($orderItems as $orderItem) {
+            foreach ($orderItems as $orderItem) {
                 /* @var Mage_Sales_Model_Order_Item $orderItem */
                 $lineItem = Mage::getModel('ewayrapid/field_lineItem');
                 $lineItem->setSKU($orderItem->getSku());
@@ -325,15 +345,20 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         return $this;
     }
 
-    public function getTransaction($transaction_number) {
+    public function getTransaction($transactionNumber) 
+    {
         try {
-            $results = $this->_doRapidAPI("Transaction/$transaction_number", 'GET');
+            $results = $this->_doRapidAPI("Transaction/$transactionNumber", 'GET');
             if ($results->isSuccess()) {
                 return $results->getTransactions();
             }
         } catch (Exception $e) {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
-                $results->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
+                    $results->getMessage()
+                )
+            );
             return false;
         }
     }

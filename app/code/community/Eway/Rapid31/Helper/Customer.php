@@ -13,7 +13,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
      */
     public function getCurrentCustomer()
     {
-        if(!$this->_currentCustomer) {
+        if (!$this->_currentCustomer) {
             $this->_currentCustomer = $this->_getCurrentCustomer();
         }
 
@@ -37,23 +37,23 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
      */
     protected function _getCurrentCustomer()
     {
-        if(Mage::helper('ewayrapid')->isBackendOrder()){
-            if(Mage::registry('current_customer')){
+        if (Mage::helper('ewayrapid')->isBackendOrder()) {
+            if (Mage::registry('current_customer')) {
                 return Mage::registry('current_customer');
-            }elseif($this->_getRequest()->getParam('customer_id')){
+            } elseif ($this->_getRequest()->getParam('customer_id')) {
                 return Mage::getModel('customer/customer')->load($this->_getRequest()->getParam('customer_id'));
             }
         }
 
-        if(Mage::helper('ewayrapid')->isBackendOrder() && Mage::getSingleton('adminhtml/session_quote')->getCustomer()) {
+        if (Mage::helper('ewayrapid')->isBackendOrder() && Mage::getSingleton('adminhtml/session_quote')->getCustomer()) {
             return Mage::getSingleton('adminhtml/session_quote')->getCustomer();
         }
 
-        if(Mage::getSingleton('customer/session')->isLoggedIn()) {
+        if (Mage::getSingleton('customer/session')->isLoggedIn()) {
             return Mage::getSingleton('customer/session')->getCustomer();
         }
 
-        if(($quote = Mage::getSingleton('checkout/session')->getQuote()) && ($customer = $quote->getCustomer()) && $customer->getId()) {
+        if (($quote = Mage::getSingleton('checkout/session')->getQuote()) && ($customer = $quote->getCustomer()) && $customer->getId()) {
             return $customer;
         }
 
@@ -80,7 +80,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function getTokenById($id)
     {
         $customer = $this->getCurrentCustomer();
-        if($customer && $customer->getSavedTokens()) {
+        if ($customer && $customer->getSavedTokens()) {
             return $customer->getSavedTokens()->getTokenById($id);
         } else {
             Mage::throwException($this->__('Customer does not have any saved token.'));
@@ -95,7 +95,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function getLastTokenId()
     {
         $customer = $this->getCurrentCustomer();
-        if($customer && $customer->getSavedTokens()) {
+        if ($customer && $customer->getSavedTokens()) {
             return $customer->getSavedTokens()->getLastId();
         }
 
@@ -110,9 +110,9 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function addToken($info)
     {
         $customer = $this->getCurrentCustomer();
-        if($customer) {
+        if ($customer) {
             $savedTokens = $customer->getSavedTokens();
-            if(!$savedTokens) {
+            if (!$savedTokens) {
                 $savedTokens = Mage::getModel('ewayrapid/customer_savedtokens');
             }
 
@@ -120,7 +120,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
             $customer->setSavedTokens($savedTokens);
 
             // Only save existed customer, new customer will be saved by Magento.
-            if($customer->getId()) {
+            if ($customer->getId()) {
                 $customer->save();
             }
         }
@@ -169,7 +169,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function getDefaultToken()
     {
         $customer = $this->getCurrentCustomer();
-        if($customer && $customer->getSavedTokens()) {
+        if ($customer && $customer->getSavedTokens()) {
             return $customer->getSavedTokens()->getDefaultToken();
         }
 
@@ -184,12 +184,12 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function getActiveTokenList()
     {
         $customer = $this->getCurrentCustomer();
-        if($customer && $customer->getSavedTokens()) {
+        if ($customer && $customer->getSavedTokens()) {
             $tokens = $customer->getSavedTokens()->getTokens();
-            if(is_array($tokens)) {
-                foreach($tokens as $key => $token) {
+            if (is_array($tokens)) {
+                foreach ($tokens as $key => $token) {
                     /* @var Eway_Rapid31_Model_Customer_Token $token */
-                    if(!$token->getActive()) {
+                    if (!$token->getActive()) {
                         unset($tokens[$key]);
                     } else {
                         $token->unsetData('Token');
@@ -210,25 +210,25 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     public function checkTokenListByType($type = Eway_Rapid31_Model_Config::CREDITCARD_METHOD)
     {
         $customer = $this->getCurrentCustomer();
-        if($customer && $customer->getSavedTokens()) {
+        if ($customer && $customer->getSavedTokens()) {
             $tokens = $customer->getSavedTokens()->getTokens();
-            if(is_array($tokens)) {
-                foreach($tokens as $key => $token) {
+            if (is_array($tokens)) {
+                foreach ($tokens as $key => $token) {
                     /* @var Eway_Rapid31_Model_Customer_Token $token */
-                    if(!$token->getActive()) {
+                    if (!$token->getActive()) {
                         unset($tokens[$key]);
                     } else {
                         $token->unsetData('Token');
                     }
 
-                    if($token->getCard() && $type == Eway_Rapid31_Model_Config::CREDITCARD_METHOD) {
+                    if ($token->getCard() && $type == Eway_Rapid31_Model_Config::CREDITCARD_METHOD) {
                         if (preg_match('/^'.Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD.'/', strtolower($token->getCard()))) {
                             unset($tokens[$key]);
                         }
                         if (preg_match('/^mc/', strtolower($token->getCard()))) {
                             unset($tokens[$key]);
                         }
-                    } elseif($token->getCard()) {
+                    } elseif ($token->getCard()) {
                         if (!preg_match('/^'.$type.'/', strtolower($token->getCard()))) {
                             unset($tokens[$key]);
                         }

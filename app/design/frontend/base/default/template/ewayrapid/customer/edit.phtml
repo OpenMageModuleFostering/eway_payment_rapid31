@@ -17,10 +17,10 @@ switch ($connectionType) {
         $submitFunction = 'beforeSubmit';
         break;
     case Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE:
-        $formUrl = Mage::getBaseUrl() . '/ewayrapid/mycards/getAccessCode';
+        $formUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . '/ewayrapid/mycards/getAccessCode';
         break;
     case Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME:
-        $formUrl = Mage::getBaseUrl() . '/ewayrapid/mycards/getAccessCode';
+        $formUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . '/ewayrapid/mycards/getAccessCode';
         $iframe = true;
         $submitFunction = 'beforeSubmitIframe';
         break;
@@ -442,7 +442,7 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE && $co
         . $this->__('Save Credit Card') . '</span></span></button>'
         . '<span id="save-please-wait" class="please-wait" style="display:none;">
             <img class="v-middle" title="Loading..." alt="Loading..." src="'
-        . Mage::getBaseUrl() . '/skin/frontend/rwd/default/images/opc-ajax-loader.gif">
+        . Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . '/skin/frontend/rwd/default/images/opc-ajax-loader.gif">
                 Please waiting ...
             </span>'
         : '<button type="submit" title="' . $this->__('Save Credit Card') . '" class="button"><span><span>' . $this->__('Save Credit Card') . '</span></span></button>';
@@ -565,7 +565,7 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE && $co
         $('save-please-wait').setStyle({'display': 'block'});
 
         // Get access code
-        new Ajax.Request('<?php echo Mage::getBaseUrl() ?>/ewayrapid/mycards/getAccessCode',
+        new Ajax.Request('<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) ?>/ewayrapid/mycards/getAccessCode',
             {
                 method: 'post',
                 parameters: $('form-validate').serialize(true),
@@ -655,7 +655,7 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE && $co
         $('save-please-wait').setStyle({'display': 'block'});
 
         // Get access code
-        new Ajax.Request('<?php echo Mage::getBaseUrl() ?>/ewayrapid/mycards/getAccessCode',
+        new Ajax.Request('<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) ?>/ewayrapid/mycards/getAccessCode',
             {
                 method: 'post',
                 parameters: $('form-validate').serialize(true),

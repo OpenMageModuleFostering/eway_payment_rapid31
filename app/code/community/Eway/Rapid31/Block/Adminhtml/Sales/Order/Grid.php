@@ -58,7 +58,7 @@ class Eway_Rapid31_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Block
             )
         );
 
-        $collection->addFieldToFilter('payment.method',array('in' => $ewayMethodCodes));
+        $collection->addFieldToFilter('payment.method', array('in' => $ewayMethodCodes));
 
         $this->setCollection($collection);
         return parent::_prepareCollection();
@@ -67,43 +67,56 @@ class Eway_Rapid31_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Block
     protected function _prepareColumns()
     {
 
-        $this->addColumn('real_order_id', array(
+        $this->addColumn(
+            'real_order_id', array(
             'header'=> Mage::helper('ewayrapid')->__('Magento Order ID'),
             'width' => '80px',
             'type'  => 'text',
             'index' => 'increment_id',
-        ));
+            )
+        );
 
-        $this->addColumn('items_ordered', array(
+        $this->addColumn(
+            'items_ordered', array(
             'header' => Mage::helper('ewayrapid')->__('Item(s) Ordered'),
             'index' => 'entity_id',
             'renderer' => 'Eway_Rapid31_Block_Adminhtml_Sales_Order_Renderer_Items',
             'filter_condition_callback' => array($this, '_itemsFilter'),
-        ));
+            )
+        );
 
-        $this->addColumn('created_at', array(
+        $this->addColumn(
+            'created_at', array(
             'header' => Mage::helper('ewayrapid')->__('Purchased On'),
             'index' => 'created_at',
             'type' => 'datetime',
             'width' => '100px',
-        ));
+            )
+        );
 
-        $this->addColumn('billing_name', array(
+        $this->addColumn(
+            'billing_name', array(
             'header' => Mage::helper('ewayrapid')->__('Bill to Name'),
             'index' => 'billing_name',
-        ));
+            )
+        );
 
-        $this->addColumn('beagle_score', array(
+        $this->addColumn(
+            'beagle_score', array(
             'header' => Mage::helper('ewayrapid')->__('Beagle Score'),
             'index' => 'beagle_score',
-        ));
+            )
+        );
 
-        $this->addColumn('fraud_action', array(
+        $this->addColumn(
+            'fraud_action', array(
             'header' => Mage::helper('ewayrapid')->__('Fraud Action'),
             'index' => 'fraud_action',
-        ));
+            )
+        );
 
-        $this->addColumn('transaction_captured', array(
+        $this->addColumn(
+            'transaction_captured', array(
             'header' => Mage::helper('ewayrapid')->__('Captured'),
             'index' => 'transaction_captured',
             'type'  => 'options',
@@ -111,20 +124,25 @@ class Eway_Rapid31_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Block
                 self::CAPTURED    => Mage::helper('ewayrapid')->__('Yes'),
                 self::NOT_CAPTURED   => Mage::helper('ewayrapid')->__('No')
             ),
-        ));
+            )
+        );
 
-        $this->addColumn('fraud_codes', array(
+        $this->addColumn(
+            'fraud_codes', array(
             'header' => Mage::helper('ewayrapid')->__('Fraud Codes'),
             'index' => 'fraud_codes',
-        ));
+            )
+        );
 
-        $this->addColumn('status', array(
+        $this->addColumn(
+            'status', array(
             'header' => Mage::helper('ewayrapid')->__('Order Status'),
             'index' => 'status',
             'type'  => 'options',
             'width' => '70px',
             'options' => Mage::getSingleton('sales/order_config')->getStatuses(),
-        ));
+            )
+        );
 
         return parent::_prepareColumns();
     }
@@ -168,11 +186,11 @@ class Eway_Rapid31_Block_Adminhtml_Sales_Order_Grid extends Mage_Adminhtml_Block
 
         $filteredOrderIds = array();
 
-        foreach($filteredCollection as $filteredOrder){
+        foreach ($filteredCollection as $filteredOrder) {
             $filteredOrderIds[] = $filteredOrder->getId();
         }
 
-        $collection->addFieldToFilter('entity_id',array('in' => $filteredOrderIds));
+        $collection->addFieldToFilter('entity_id', array('in' => $filteredOrderIds));
 
         return $this;
     }

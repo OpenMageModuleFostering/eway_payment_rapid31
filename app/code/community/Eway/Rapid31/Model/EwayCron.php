@@ -2,9 +2,11 @@
 /**
  * 
  */
-class Eway_Rapid31_Model_EwayCron {
+class Eway_Rapid31_Model_EwayCron
+{
 
-    public function querySuspectFraud() {
+    public function querySuspectFraud() 
+    {
 
         // Load orders with fraud in 7 days before from now
         $orders = Mage::getModel('sales/order')->getCollection()
@@ -20,12 +22,12 @@ class Eway_Rapid31_Model_EwayCron {
                 continue;
             }
             $result = $this->__getTransaction($transactionId);
-            $result_decode = json_decode($result);
+            $resultDecode = json_decode($result);
             // continue when property transaction is not exist
-            if (!property_exists($result_decode, 'Transactions') || empty($result_decode->Transactions)) {
+            if (!property_exists($resultDecode, 'Transactions') || empty($resultDecode->Transactions)) {
                 continue;
             }
-            $trans = $result_decode->Transactions;
+            $trans = $resultDecode->Transactions;
 
             // continue when transaction is not exits
             if (!isset($trans[0])) {
@@ -48,7 +50,8 @@ class Eway_Rapid31_Model_EwayCron {
         $this->getResponse()->setBody($result);*/
     }
 
-    private function __getTransaction($transId) {
+    protected function __getTransaction($transId) 
+    {
         $ewayConfig = Mage::getSingleton('ewayrapid/config');
         $url = $ewayConfig->getRapidAPIUrl('Transaction') . '/' . $transId;
         $ch = curl_init($url);
@@ -68,14 +71,16 @@ class Eway_Rapid31_Model_EwayCron {
      * Re-create order with new transaction returned by Eway
      * @param $data
      */
-    private function __createNewTransaction(Mage_Sales_Model_Order $order, $transId) {
+    protected function __createNewTransaction(Mage_Sales_Model_Order $order, $transId) 
+    {
 
         // Load transaction
         $currentTrans = Mage::getModel('sales/order_payment_transaction')
             ->getCollection()
             ->addFieldToFilter('order_id', array('eq' => $order->getEntityId()));
-        foreach($currentTrans as $t) { }
-        if($t == null) {
+        foreach ($currentTrans as $t) { 
+        }
+        if ($t == null) {
             $t = new Mage_Sales_Model_Order_Payment_Transaction();
         }
 
@@ -91,17 +96,17 @@ class Eway_Rapid31_Model_EwayCron {
         $trans->setPaymentId($t->getPaymentId());
         // Get new TxnId
         $break = true;
-        for($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $transId ++;
             $newTrans = Mage::getModel('sales/order_payment_transaction')
                 ->getCollection()
                 ->addFieldToFilter('txn_id', array('eq' => $transId));
-            if(count($newTrans) == 0) {
+            if (count($newTrans) == 0) {
                 $break = false;
                 break;
             }
         }
-        if($break) {
+        if ($break) {
             return false;
         }
         $trans->setTxnId($transId);
@@ -113,15 +118,17 @@ class Eway_Rapid31_Model_EwayCron {
 
     }
 
-    private function __updateStatusOrder(Mage_Sales_Model_Order $order) {
-        $state_config = Mage::getStoreConfig('payment/ewayrapid_general/verify_eway_order');
+    protected function __updateStatusOrder(Mage_Sales_Model_Order $order) 
+    {
+        $stateConfig = Mage::getStoreConfig('payment/ewayrapid_general/verify_eway_order');
 
-        $order->setState($state_config);
-        $order->setStatus($state_config);
+        $order->setState($stateConfig);
+        $order->setStatus($stateConfig);
         $order->save();
     }
 
-    private function __unMarkFraudUser(Mage_Sales_Model_Order $order) {
+    protected function __unMarkFraudUser(Mage_Sales_Model_Order $order) 
+    {
         $uid = $order->getCustomerId();
         if ($uid) {
             $customer = Mage::getModel('customer/customer')->load($uid);

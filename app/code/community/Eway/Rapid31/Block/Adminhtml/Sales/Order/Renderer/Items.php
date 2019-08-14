@@ -8,8 +8,8 @@ class Eway_Rapid31_Block_Adminhtml_Sales_Order_Renderer_Items extends Mage_Admin
         $order = Mage::getModel('sales/order')->load($value);
 
         $html = '';
-        if($order->getId()){
-            foreach($order->getAllVisibleItems() as $item){
+        if ($order->getId()) {
+            foreach ($order->getAllVisibleItems() as $item) {
                 $html .= $item->getName() . ', ';
             }
         }

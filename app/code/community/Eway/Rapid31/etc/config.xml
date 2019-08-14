@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Eway_Rapid31>
-            <version>1.4.0</version>
+            <version>1.4.1</version>
         </Eway_Rapid31>
     </modules>
     <global>
@@ -100,6 +100,11 @@
         </fieldsets>
     </global>
     <frontend>
+        <secure_url>
+            <eway_account_cards>/ewayrapid/mycards</eway_account_cards>
+            <eway_checkout_redirect>/ewayrapid/transparent</eway_checkout_redirect>
+            <eway_checkout_shared>/ewayrapid/sharedpage</eway_checkout_shared>
+        </secure_url>
         <translate>
             <modules>
                 <Eway_Rapid31>
@@ -148,24 +153,6 @@
                     </eway_rapid31_check_customer_mark>
                 </observers>
             </controller_action_predispatch_checkout_onepage_index>
-
-            <!--<sales_order_save_before>
-                <observers>
-                    <sales_order_save_before>
-                        <class>ewayrapid/observer</class>
-                        <method>hookToSaveOrderBefore</method>
-                    </sales_order_save_before>
-                </observers>
-            </sales_order_save_before>
-
-            <sales_order_save_after>
-                <observers>
-                    <sales_order_save_after>
-                        <class>ewayrapid/observer</class>
-                        <method>hookToSaveOrderAfter</method>
-                    </sales_order_save_after>
-                </observers>
-            </sales_order_save_after>-->
 
             <sales_order_place_before>
                 <observers>
@@ -349,6 +336,7 @@
                 <title>Credit Card - eWAY</title>
                 <save_card>1</save_card>
                 <save_text>Save my details</save_text>
+                <save_card_checked>1</save_card_checked>
             </ewayrapid_ewayone>
         </payment>
     </default>

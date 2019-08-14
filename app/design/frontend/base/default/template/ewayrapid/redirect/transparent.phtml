@@ -24,12 +24,12 @@
  */
 ?>
 <?php
-$_code = $this->methodPayment;
+$_code = $this->_methodPayment;
 if (!$_code) $_code = 'ewayrapid_notsaved';
 
 $infoCard = Mage::getSingleton('core/session')->getInfoCard();
-if (is_numeric($this->savedToken)) {
-    $infoCardData = Mage::helper('ewayrapid/customer')->getTokenById($this->savedToken);
+if (is_numeric($this->_savedToken)) {
+    $infoCardData = Mage::helper('ewayrapid/customer')->getTokenById($this->_savedToken);
     if($infoCard->getOwner()) {
         $infoCardData->setOwner($infoCard->getOwner());
     }
@@ -56,7 +56,7 @@ if (is_numeric($this->savedToken)) {
                 title="Connecting..." class="v-middle"> Connecting...</span></h4>
 
     <input type="hidden" name="EWAY_ACCESSCODE" value="<?php echo $this->getAccessCode(); ?>"/>
-    <input type="hidden" name="EWAY_PAYMENTTYPE" value="<?php echo $this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD ? 'paypal' : $this->transMethod; ?>"/>
+    <input type="hidden" name="EWAY_PAYMENTTYPE" value="<?php echo $this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD ? 'paypal' : $this->_transMethod; ?>"/>
     <input type="hidden" title="<?php echo $this->__('Name on Card') ?>" class="input-text required-entry"
            id="EWAY_CARDNAME" name="EWAY_CARDNAME"
            value="<?php echo ($infoCard && $infoCard->getOwner()) ? $infoCard->getOwner() : '' ?>"/>

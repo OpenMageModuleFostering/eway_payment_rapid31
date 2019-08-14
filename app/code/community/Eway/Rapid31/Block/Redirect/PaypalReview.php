@@ -49,9 +49,11 @@ class Eway_Rapid31_Block_Redirect_PaypalReview extends Mage_Core_Block_Template
         $postCode = $this->_quote->getShippingAddress()
             ->getPostcode();
         if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
-            $sharedpageModel = Mage::getModel('ewayrapid/request_sharedpage', array(
+            $sharedpageModel = Mage::getModel(
+                'ewayrapid/request_sharedpage', array(
                 'quote' => $this->_quote
-            ));
+                )
+            );
             return $sharedpageModel->getShippingByCode($postCode);
         } elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT) {
             $transModel = Mage::getModel('ewayrapid/request_transparent');

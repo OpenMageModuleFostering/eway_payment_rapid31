@@ -19,7 +19,8 @@
  * needs please refer to http://www.magentocommerce.com for more information.
  *
  * @category    design
- * @package     base_default
+ * @package     base_default
+
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -28,14 +29,14 @@ $_code = $this->getMethodCode()
 ?>
 <?php if($this->checkSaveCardAvailable()): ?>
 <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display: none;width: 80%;padding-top: 8px;">
-    <li>
+    <?php
+    $_tokens = $this->getTokenList();
+    $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
+    ?>
+    <li <?php echo count($_tokens['tokens']) <= 1 ? 'style="display:none;"' : '' ?>>
         <div class="input-box">
             <div class="v-fix">
                 <select id="ewayrapid_ewayone_token" name="payment[saved_token]" class="ewayrapid_ewayone_token">
-                    <?php
-                    $_tokens = $this->getTokenList();
-                    $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
-                    ?>
                     <?php foreach($_tokens['tokens'] as $_key => $_token): ?>
                         <?php /* @var Eway_Rapid31_Model_Customer_Token $_token */ ?>
                         <option value="<?php echo $_key ?>" <?php if($_key == $_defaultToken): ?>selected="selected"<?php endif; ?>>

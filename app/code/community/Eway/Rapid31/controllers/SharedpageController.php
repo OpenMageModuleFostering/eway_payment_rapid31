@@ -91,7 +91,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
 
             // Save redirect url for iframe callback
             $redirectUrl = Mage::getModel('core/url')->parseUrl($this->_checkout->getRedirectUrl())
-                ->setQueryParam('AccessCode',$data['AccessCode']);
+                ->setQueryParam('AccessCode', $data['AccessCode']);
 
             $redirectUrl = Mage::getUrl('*/*/return', $redirectUrl->getQueryParams());
 
@@ -145,9 +145,9 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
 
             $response = $this->_checkout->getInfoByAccessCode($accessCode);
             // Get Fraud Information
-            if($response->isSuccess()){
+            if ($response->isSuccess()) {
                 $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                if($transaction) {
+                if ($transaction) {
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                     $captured = $transaction[0]['TransactionCaptured'];
@@ -155,33 +155,37 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
                 }
             }
 
-            if($response->getData('BeagleVerification')){
+            if ($response->getData('BeagleVerification')) {
                 $beagleVerification = $response->getData('BeagleVerification');
             }
-            if($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0){
+            if ($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0) {
                 $beagleScore = $response->getData('BeagleScore');
             }
             if ($editToken || $newToken) {
                 if ($response->getTokenCustomerID()) {
                     $method = $this->_getQuote()->getPayment()->getMethod();
-                    if($method == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE){
+                    if ($method == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE) {
                         // Authorize only require to call 2 requests, create token first, then use response to authorize payment
                         $response = $this->_checkout->saveTokenById($response, $editToken);
                         $response = $this->_processPayment($response);
-                    }else{
+                    } else {
                         // Authorize & Capture using TokenPayment will create request & charge payment in one call request.
                         // Don't need to call processPayment with token id
                         $this->_checkout->saveTokenById($response, $editToken);
                     }
-                    if($response->getData('BeagleVerification')){
+                    if ($response->getData('BeagleVerification')) {
                         $beagleVerification = $response->getData('BeagleVerification');
                     }
-                    if($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0){
+                    if ($response->getData('BeagleScore') && $response->getData('BeagleScore') > 0) {
                         $beagleScore = $response->getData('BeagleScore');
                     }
                 } else {
-                    Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction. Please try again. (Error message: %s)',
-                        $response->getMessage()));
+                    Mage::throwException(
+                        Mage::helper('ewayrapid')->__(
+                            'An error occurred while making the transaction. Please try again. (Error message: %s)',
+                            $response->getMessage()
+                        )
+                    );
                 }
             }
 
@@ -189,20 +193,24 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             if ($response->isSuccess()) {
 
                 // Save fraud information
-                if(is_null($fraudAction)){
+                if (is_null($fraudAction)) {
                     $fraudAction = $response->getFraudAction();
                 }
-                if(is_null($fraudCodes)){
+                if (is_null($fraudCodes)) {
                     $fraudCodes = $response->getFraudCodes();
                 }
-                if(is_null($captured)){
+                if (is_null($captured)) {
                     $captured = $response->getTransactionCaptured();
                 }
 
-                $orderId = $this->storeOrder($response, 'success', $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured);
+                $orderId = $this->storeOrder($response, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured, 'success');
             } else {
-                Mage::throwException(Mage::helper('ewayrapid')->__('Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
-                    $response->getMessage()));
+                Mage::throwException(
+                    Mage::helper('ewayrapid')->__(
+                        'Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
+                        $response->getMessage()
+                    )
+                );
             }
             if ($orderId) {
                 $this->_redirect('checkout/onepage/success');
@@ -223,7 +231,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
      * @param string $successType
      * @return string
      */
-    private function storeOrder($response, $successType = 'success', $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured)
+    private function storeOrder($response, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured, $successType = 'success')
     {
         try {
             // Clear the basket and save the order (including some info about how the payment went)
@@ -299,9 +307,11 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $this->getResponse()->setHeader('HTTP/1.1', '403 Forbidden');
             Mage::throwException(Mage::helper('ewayrapid')->__('Unable to initialize Shared page Checkout.'));
         }
-        $this->_checkout = Mage::getSingleton($this->_checkoutType, array(
+        $this->_checkout = Mage::getSingleton(
+            $this->_checkoutType, array(
             'quote' => $quote
-        ));
+            )
+        );
     }
 
     /**
@@ -352,10 +362,12 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $quote = $this->_getQuote();
             $cRate = $this->_checkout->getShippingByCode($shippingMethod);
             if ($cRate) {
-                echo json_encode(array(
+                echo json_encode(
+                    array(
                     'form_action' => $formActionURL,
                     'input_post' => '<input type="hidden" name="EWAY_NEWSHIPPINGTOTAL" value="' . round($cRate->getPrice() * 100) . '" />'
-                ));
+                    )
+                );
             } else {
                 Mage::throwException($this->__('Method not found.'));
             }
@@ -382,9 +394,9 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             $beagleScore = $response->getBeagleScore();
 
             // Get Fraud Information
-            if($response->isSuccess()){
+            if ($response->isSuccess()) {
                 $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                if($transaction) {
+                if ($transaction) {
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                     $captured = $transaction[0]['TransactionCaptured'];
@@ -398,16 +410,16 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
                 $response = $this->_checkout->doAuthorisation($response);
 
                 // Reload Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
-                        if($transaction[0]['FraudAction']){
+                    if ($transaction) {
+                        if ($transaction[0]['FraudAction']) {
                             $fraudAction = $transaction[0]['FraudAction'];
                         }
-                        if(Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage'])){
+                        if (Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage'])) {
                             $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         }
-                        if($transaction[0]['TransactionCaptured']){
+                        if ($transaction[0]['TransactionCaptured']) {
                             $captured = $transaction[0]['TransactionCaptured'];
                         }
                         unset($transaction);
@@ -420,9 +432,9 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
                 $response = $this->_checkout->doAuthorisation($response);
 
                 // Get Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
+                    if ($transaction) {
                         $fraudAction = $transaction[0]['FraudAction'];
                         $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         $captured = $transaction[0]['TransactionCaptured'];
@@ -433,9 +445,9 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
                 $response = $this->_checkout->doTransaction($response);
 
                 // Get Fraud Information
-                if($response->isSuccess()){
+                if ($response->isSuccess()) {
                     $transaction = $this->_checkout->getTransaction($response['TransactionID']);
-                    if($transaction) {
+                    if ($transaction) {
                         $fraudAction = $transaction[0]['FraudAction'];
                         $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                         $captured = $transaction[0]['TransactionCaptured'];
@@ -445,11 +457,15 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
             }
         }
         if (!$response->isSuccess()) {
-            Mage::throwException(Mage::helper('ewayrapid')->__('Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
+                    $response->getMessage()
+                )
+            );
         }
 
-        if($response->getBeagleScore() === null){
+        if ($response->getBeagleScore() === null) {
             $response->setBeagleScore($beagleScore);
         }
         $response->setFraudAction($fraudAction);

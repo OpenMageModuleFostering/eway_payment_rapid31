@@ -6,7 +6,8 @@ $installer->startSetup();
 
 $setup = Mage::getResourceModel('customer/setup', 'core_setup');
 
-$setup->addAttribute('customer', 'block_fraud_customer', array(
+$setup->addAttribute(
+    'customer', 'block_fraud_customer', array(
     'input' => 'select',
     'type' => 'int',
     'label' => 'Unblock Fraud Customer',
@@ -15,7 +16,8 @@ $setup->addAttribute('customer', 'block_fraud_customer', array(
     'user_defined' => '0',
     'default' => '0',
     'source' => 'eav/entity_attribute_source_boolean'
-));
+    )
+);
 
 try {
     $attributeId = $setup->getAttributeId('customer', 'block_fraud_customer');

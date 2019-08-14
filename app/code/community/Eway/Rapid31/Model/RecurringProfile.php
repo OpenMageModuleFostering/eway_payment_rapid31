@@ -66,10 +66,10 @@ class Eway_Rapid31_Model_RecurringProfile
     {
         $methodCode = $this->_recurringProfile->getMethodCode();
         if ($methodCode != 'ewayrapid_saved' && $methodCode != 'ewayrapid_ewayone') {
-            throw new Exception(sprintf('Method "%s" is not eWAY Rapid (Saved).', $methodCode));
+            Mage::throwException(sprintf('Method "%s" is not eWAY Rapid (Saved).', $methodCode));
         }
         if (!Mage::helper('ewayrapid')->isSavedMethodEnabled()) {
-            throw new Exception(sprintf('Method "%s" is not available.', $methodCode));
+            Mage::throwException(sprintf('Method "%s" is not available.', $methodCode));
         }
     }
 
@@ -102,8 +102,7 @@ class Eway_Rapid31_Model_RecurringProfile
                 $this->_recurringProfile->setAdditionalInfo($additionalInfo);
                 $this->_price = $this->_recurringProfile->getTrialBillingAmount();
                 $this->_periodType = Mage_Sales_Model_Recurring_Profile::PAYMENT_TYPE_TRIAL;
-            }
-            elseif (isset($additionalInfo['trialPeriodMaxCycles']) && $additionalInfo['trialPeriodMaxCycles'] > 0) {
+            } elseif (isset($additionalInfo['trialPeriodMaxCycles']) && $additionalInfo['trialPeriodMaxCycles'] > 0) {
                 $this->_price = $this->_recurringProfile->getTrialBillingAmount();
                 $this->_periodType = Mage_Sales_Model_Recurring_Profile::PAYMENT_TYPE_TRIAL;
             }
@@ -357,14 +356,18 @@ class Eway_Rapid31_Model_RecurringProfile
      */
     protected function _checkDate($unit, $frequency, $startDate, $newDate)
     {
-        if('day' === $unit) {
+        if ('day' === $unit) {
             return true;
         }
 
         list($oldYear, $oldMonth, $oldDay) = explode('-', date('Y-m-d', strtotime($startDate)));
         list($newYear, $newMonth, $newDay) = explode('-', date('Y-m-d', strtotime($newDate)));
 
-        if(($oldDay + (int)('day' == $unit ? $frequency : 0)) == $newDay && ($oldMonth + (int)('month' == $unit ? $frequency : 0)) == $newMonth && ($oldYear + (int)('year' == $unit ? $frequency : 0)) == $newYear) {
+        if (
+                ($oldDay + (int)('day' == $unit ? $frequency : 0)) == $newDay 
+                && ($oldMonth + (int)('month' == $unit ? $frequency : 0)) == $newMonth 
+                && ($oldYear + (int)('year' == $unit ? $frequency : 0)) == $newYear
+            ) {
             return true;
         }
         return false;
@@ -384,7 +387,7 @@ class Eway_Rapid31_Model_RecurringProfile
         $nextDate = new DateTime(date("Y-m-d", strtotime($additionalInfo['nextDate'])), new DateTimeZone($timezone));
         $currentDate = new DateTime(date("Y-m-d", Mage::getModel('core/date')->timestamp(time())), new DateTimeZone($timezone));
         if (!isset($additionalInfo['beforeDate']) || $additionalInfo['beforeDate'] == null) {
-            if($nextDate == $currentDate) {
+            if ($nextDate == $currentDate) {
                 return true;
             }
         } else {
@@ -404,8 +407,6 @@ class Eway_Rapid31_Model_RecurringProfile
      */
     public function checkRecurringTimeStart($startDate = null)
     {
-        // fix for ambigious timestamp (dashes force to dd/mm not mm/dd)
-        //$startDate = str_replace('/', '-', $startDate);
         // timezone used as store's timezone
         return strtotime(date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp(time()))) >= strtotime($startDate);
     }

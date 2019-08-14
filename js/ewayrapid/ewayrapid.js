@@ -173,11 +173,15 @@ EwayPayment.prototype = {
                 }
             );
         } else {
-            this.prototype.ewaysavedOldOrder();
+            ewayPayment.saveUrl = review.saveUrl;
+            ewayPayment.onComplete = review.onComplete;
+            ewayPayment.onSave = review.onSave;
+            ewayPayment.agreementsForm = review.agreementsForm;
+            ewayPayment.ewaysavedOldOrder();
         }
     },
 
-    subMitForm: function () {
+    submitForm: function () {
         eCrypt.submitForm();
     },
 
@@ -187,6 +191,8 @@ EwayPayment.prototype = {
                 var ewayForm = new EwayForm();
                 var formToEncrypt = ewayForm.findFormToEncrypt();
                 var submitForm = ewayForm.encryptForm(formToEncrypt, true);
+            } else {
+                var submitForm = editForm;
             }
             if (this.orderItemChanged) {
                 if (confirm('You have item changes')) {
@@ -210,33 +216,35 @@ EwayPayment.prototype = {
                 var ewayForm = new EwayForm();
                 var formToEncrypt = ewayForm.findFormToEncrypt();
                 var submitForm = ewayForm.encryptForm(formToEncrypt, true);
+                var request = new Ajax.Request(
+                    ewayPayment.paymentUrl,
+                    {
+                        method: 'post',
+                        onComplete: {},
+                        parameters: Form.serialize(submitForm, true),
+                        onSuccess: function (trans) {
+                            var res = trans.responseText.evalJSON();
+                            if(res.success && res.url){
+
+                                var eWAYConfig = {
+                                    sharedPaymentUrl: res.url
+                                };
+                                ewayReturnUrl = res.returnUrl;
+
+                                eCrypt.showModalPayment(eWAYConfig, eWayRapidCallback);
+
+                            }else if(res.message){
+                                alert(res.message);
+                                $('review-please-wait') && $('review-please-wait').hide();
+                                $('review-buttons-container') && $('review-buttons-container').down('button').show();
+                            }
+                        },
+                        onFailure: {}
+                    }
+                );
+            } else {
+                ewayPayment.submitAdminOrder();
             }
-            var request = new Ajax.Request(
-                ewayPayment.paymentUrl,
-                {
-                    method: 'post',
-                    onComplete: {},
-                    parameters: Form.serialize(submitForm, true),
-                    onSuccess: function (trans) {
-                        var res = trans.responseText.evalJSON();
-                        if(res.success && res.url){
-
-                            var eWAYConfig = {
-                                sharedPaymentUrl: res.url
-                            };
-                            ewayReturnUrl = res.returnUrl;
-
-                            eCrypt.showModalPayment(eWAYConfig, eWayRapidCallback);
-
-                        }else if(res.message){
-                            alert(res.message);
-                            $('review-please-wait') && $('review-please-wait').hide();
-                            $('review-buttons-container') && $('review-buttons-container').down('button').show();
-                        }
-                    },
-                    onFailure: {}
-                }
-            );
         }
     },
 
@@ -258,11 +266,13 @@ EwayPayment.prototype = {
 
     OneStepCheckout: {
         switchMethod: function(method) {
-            $$('.payment-method .form-list').each(function(form) {
+            $$('.payment-method .form-list').each(
+                function(form) {
                 //form.style.display = 'none';
                 var elements = form.select('input').concat(form.select('select')).concat(form.select('textarea'));
                 for (var i=0; i<elements.length; i++) elements[i].disabled = true;
-            });
+                }
+            );
 
             if ($('payment_form_'+method)){
                 var form = $('payment_form_'+method);
@@ -338,12 +348,14 @@ EwayPayment.prototype = {
                 params = Form.serialize(encryptedForm, true);
 
                 urlSuffix = urlSuffix || '';
-                var request = new Ajax.Request(this.urls.save + urlSuffix, {
+                var request = new Ajax.Request(
+                    this.urls.save + urlSuffix, {
                     method:'post',
                     parameters:params,
                     onSuccess: this.setResponse.bind(this),
                     onFailure: this.ajaxFailure.bind(this)
-                });
+                    }
+                );
             } else if(typeof this.ewayOldSave == 'function') {
                 this.ewayOldSave(urlSuffix, forceSave);
             }
@@ -399,12 +411,14 @@ EwayPayment.prototype = {
                 //}
 
                 urlSuffix = urlSuffix || '';
-                var request = new Ajax.Request(this.urls.save + urlSuffix, {
+                var request = new Ajax.Request(
+                    this.urls.save + urlSuffix, {
                     method:'post',
                     parameters:params,
                     onSuccess: this.setResponse.bind(this),
                     onFailure: this.ajaxFailure.bind(this)
-                });
+                    }
+                );
             } else if(typeof this.ewayOldSave == 'function') {
                 this.ewayOldSave(urlSuffix, forceSave);
             }
@@ -482,13 +496,15 @@ EwayPayment.prototype = {
                     var el = $('checkout-' + i + '-load');
                     if (el) {
                         var data = {};
-                        el.select('input, select').each(function(input) {
+                        el.select('input, select').each(
+                            function(input) {
                             if ('radio' == input.type || 'checkbox' == input.type) {
                                 data[input.id] = input.checked;
                             } else {
                                 data[input.id] = input.getValue();
                             }
-                        });
+                            }
+                        );
 
                         el.update(response.update_section[i])
                             .setOpacity(1)
@@ -536,9 +552,11 @@ EwayPayment.prototype = {
                     || 'sagepaydirectpro' === response.method
                     || 'sagepaypaypal' === response.method) {
 
-                    var SageServer = new EbizmartsSagePaySuite.Checkout({
+                    var SageServer = new EbizmartsSagePaySuite.Checkout(
+                        {
                         //'checkout'  : checkout
-                    });
+                        }
+                    );
                     SageServer.code = response.method;
                     SageServer.reviewSave();
                     // SageServer.setPaymentMethod();
@@ -549,9 +567,11 @@ EwayPayment.prototype = {
             if (response.popup) {
                 this.showPopup(response.popup);
             } else if (response.body) {
-                $(document.body).insert({
+                $(document.body).insert(
+                    {
                     'bottom': response.body.content
-                });
+                    }
+                );
             }
 
             // ogone fix
@@ -754,7 +774,8 @@ EwayPayment.prototype = {
 
             params.action = action;
 
-            var request = new Ajax.Request(this.url,
+            var request = new Ajax.Request(
+                this.url,
                 {
                     method: 'post',
                     parameters: params,
@@ -932,7 +953,8 @@ EwayPayment.prototype = {
                     onFailure: function () {
                         this.existsreview = false;
                     }
-                });
+                }
+            );
         },
         getFormData: function () {
             //var form_data = $('gcheckout-onepage-form').serialize(true);
@@ -961,7 +983,8 @@ EwayPayment.prototype = {
 
                 var params = this.getFormData();
 
-                var request = new Ajax.Request(this.save_order_url,
+                var request = new Ajax.Request(
+                    this.save_order_url,
                     {
                         method: 'post',
                         parameters: params,
@@ -1051,7 +1074,7 @@ EwayPayment.prototype = {
             $MW_Onestepcheckout('#advice-required-entry_shipping').remove();
             //$MW_Onestepcheckout('#advice-required-entry_shipping').css('display','none');
 
-            if(!form.validator.validate())	{
+            if(!form.validator.validate())    {
                 if(logined()!=1){
                 val=$MW_Onestepcheckout('#billing\\:email').val();
                 emailvalidated=Validation.get('IsEmpty').test(val) || /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i.test(val);
@@ -1137,9 +1160,11 @@ EwayPaymentToken.prototype = {
             this.ewayrapidSelectToken('new');
             $('ewayrapid_ewayone_cc_type') && $('ewayrapid_ewayone_cc_type').setValue('');
             $('ewayrapid_ewayone_edit') && $('ewayrapid_ewayone_edit').hide();
-            $$('.help-disabled-cc a').each(function(element){
+            $$('.help-disabled-cc a').each(
+                function(element){
                 element.hide();
-            });
+                }
+            );
         } else {
             this.ewayrapidToggleCcForm(false);
             $('ewayrapid_ewayone_cc_type') && $('ewayrapid_ewayone_cc_type').setValue(this.savedTokens[$('ewayrapid_ewayone_token').getValue()]['Type']);
@@ -1159,9 +1184,11 @@ EwayPaymentToken.prototype = {
             $('ewayrapid_ewayone_edit').update(this.labelCancel);
             $('ewayrapid_ewayone_cc_number').disable();
             $('ewayrapid_ewayone_cc_number').removeClassName('validate-cc-number').removeClassName('validate-cc-type-auto');
-            $$('.help-disabled-cc a').each(function(element){
+            $$('.help-disabled-cc a').each(
+                function(element){
                 element.show();
-            });
+                }
+            );
 
             this.isEdit = false;
         } else {
@@ -1175,12 +1202,16 @@ EwayPaymentToken.prototype = {
     },
 
     ewayrapidToggleCcForm: function(isShow) {
-        $$('.saved_token_fields input,.saved_token_fields select').each(function(ele) {
+        $$('.saved_token_fields input,.saved_token_fields select').each(
+            function(ele) {
             isShow ? ele.enable() : ele.disable();
-        });
-        $$('.saved_token_fields').each(function(ele) {
+            }
+        );
+        $$('.saved_token_fields').each(
+            function(ele) {
             isShow ? ele.show() : ele.hide();
-        });
+            }
+        );
 
         isShow && $('ewayrapid_ewayone_cc_number') ? $('ewayrapid_ewayone_cc_number').addClassName('validate-cc-number').addClassName('validate-cc-type-auto') : ($('ewayrapid_ewayone_cc_number') ? $('ewayrapid_ewayone_cc_number').removeClassName('validate-cc-number').removeClassName('validate-cc-type-auto') : '' );
     },
@@ -1194,7 +1225,8 @@ EwayPaymentToken.prototype = {
     }
 }
 
-Validation.creditCartTypes = $H({
+Validation.creditCartTypes = $H(
+    {
     'DC': [new RegExp('^3(?:0[0-5]|[68][0-9])[0-9]{11}$'), new RegExp('^[0-9]{3}$'), true],
     'VE': [new RegExp('^(4026|4405|4508|4844|4913|4917)[0-9]{12}|417500[0-9]{10}$'), new RegExp('^[0-9]{3}$'), true],
     'ME': [new RegExp('^(5018|5020|5038|5612|5893|6304|6759|6761|6762|6763|6390)[0-9]{8,15}$'), new RegExp('^([0-9]{3}|[0-9]{4})?$'), true],
@@ -1207,12 +1239,14 @@ Validation.creditCartTypes = $H({
     'AE': [new RegExp('^3[47][0-9]{13}$'), new RegExp('^[0-9]{4}$'), true],
     'DI': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3}$'), true],
     'JCB': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3,4}$'), true],
-//    'DICL': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3}$'), true],
+    //    'DICL': [new RegExp('^(30[0-5][0-9]{13}|3095[0-9]{12}|35(2[8-9][0-9]{12}|[3-8][0-9]{13})|36[0-9]{12}|3[8-9][0-9]{14}|6011(0[0-9]{11}|[2-4][0-9]{11}|74[0-9]{10}|7[7-9][0-9]{10}|8[6-9][0-9]{10}|9[0-9]{11})|62(2(12[6-9][0-9]{10}|1[3-9][0-9]{11}|[2-8][0-9]{12}|9[0-1][0-9]{11}|92[0-5][0-9]{10})|[4-6][0-9]{13}|8[2-8][0-9]{12})|6(4[4-9][0-9]{13}|5[0-9]{14}))$'), new RegExp('^[0-9]{3}$'), true],
     'SM': [new RegExp('(^(5[0678])[0-9]{11,18}$)|(^(6[^05])[0-9]{11,18}$)|(^(601)[^1][0-9]{9,16}$)|(^(6011)[0-9]{9,11}$)|(^(6011)[0-9]{13,16}$)|(^(65)[0-9]{11,13}$)|(^(65)[0-9]{15,18}$)|(^(49030)[2-9]([0-9]{10}$|[0-9]{12,13}$))|(^(49033)[5-9]([0-9]{10}$|[0-9]{12,13}$))|(^(49110)[1-2]([0-9]{10}$|[0-9]{12,13}$))|(^(49117)[4-9]([0-9]{10}$|[0-9]{12,13}$))|(^(49118)[0-2]([0-9]{10}$|[0-9]{12,13}$))|(^(4936)([0-9]{12}$|[0-9]{14,15}$))'), new RegExp('^([0-9]{3}|[0-9]{4})?$'), true],
     'OT': [false, new RegExp('^([0-9]{3}|[0-9]{4})?$'), false]
-});
+    }
+);
 
-Validation.add('validate-cc-type-auto', 'Invalid credit card number or credit card type is not supported.',
+Validation.add(
+    'validate-cc-type-auto', 'Invalid credit card number or credit card type is not supported.',
     function(v, elm) {
         // remove credit card number delimiters such as "-" and space
         elm.value = removeDelimiters(elm.value);
@@ -1220,7 +1254,8 @@ Validation.add('validate-cc-type-auto', 'Invalid credit card number or credit ca
         var acceptedTypes = EwayPayment.supportCardTypes;
 
         var ccType = '';
-        Validation.creditCartTypes.each(function(cardType) {
+        Validation.creditCartTypes.each(
+            function(cardType) {
             $cardNumberPattern = cardType.value[0];
             if($cardNumberPattern && v.match($cardNumberPattern)) {
                 ccType = cardType.key;
@@ -1232,7 +1267,8 @@ Validation.add('validate-cc-type-auto', 'Invalid credit card number or credit ca
 
                 throw $break;
             }
-        });
+            }
+        );
 
         if(acceptedTypes.indexOf(ccType) == -1) {
             return false;
@@ -1247,11 +1283,14 @@ Validation.add('validate-cc-type-auto', 'Invalid credit card number or credit ca
     }
 );
 
-Validation.add('eway-validate-phone', 'Please enter a valid phone number.', function(v, elm) {
+Validation.add(
+    'eway-validate-phone', 'Please enter a valid phone number.', function(v, elm) {
     return Validation.get('IsEmpty').test(v) || /^[0-9\+\*\(\)]{1,32}$/.test(v);
-});
+    }
+);
 
-var EwayForm = Class.create({
+var EwayForm = Class.create(
+    {
     ewayPublicKeyAttribute : "data-eway-encrypt-key",
     ewayEncryptAttribute : "data-eway-encrypt-name",
 
@@ -1324,4 +1363,5 @@ var EwayForm = Class.create({
             }
         }
     }
-});
+    }
+);

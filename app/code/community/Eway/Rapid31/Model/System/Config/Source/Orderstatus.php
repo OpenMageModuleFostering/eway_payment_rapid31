@@ -12,17 +12,17 @@ class Eway_Rapid31_Model_System_Config_Source_Orderstatus extends Mage_Adminhtml
 
         $paymentAction = Mage::getStoreConfig('payment/ewayrapid_general/payment_action');
 
-        foreach($options as $key => $option) {
-            if(strpos($option['value'], '_ogone') !== false) {
+        foreach ($options as $key => $option) {
+            if (strpos($option['value'], '_ogone') !== false) {
                 unset($options[$key]);
             }
 
-            if($paymentAction == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
-                if($option['value'] == Eway_Rapid31_Model_Config::ORDER_STATUS_AUTHORISED) {
+            if ($paymentAction == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
+                if ($option['value'] == Eway_Rapid31_Model_Config::ORDER_STATUS_AUTHORISED) {
                     unset($options[$key]);
                 }
             } else {
-                if($option['value'] == Eway_Rapid31_Model_Config::ORDER_STATUS_CAPTURED) {
+                if ($option['value'] == Eway_Rapid31_Model_Config::ORDER_STATUS_CAPTURED) {
                     unset($options[$key]);
                 }
             }

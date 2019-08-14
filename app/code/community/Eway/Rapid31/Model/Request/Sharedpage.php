@@ -17,7 +17,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         if (isset($params['quote']) && $params['quote'] instanceof Mage_Sales_Model_Quote) {
             $this->_quote = $params['quote'];
         } else {
-            throw new Exception('Quote instance is required.');
+            Mage::throwException('Quote instance is required.');
         }
 
         $this->_config = Mage::getSingleton('ewayrapid/config');
@@ -51,22 +51,22 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         } elseif ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
             if ($this->_isNewToken()) {
                 $returnUrl .= '?newToken=1';
-                if(Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE){
+                if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
                     $method = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
                     $totalAmount = round($this->_quote->getBaseGrandTotal() * 100);
-                }else{
+                } else {
                     $method = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN ;
                 }
             } elseif ($token = $this->_editToken()) {
                 $returnUrl .= '?editToken=' . $token;
                 $token = Mage::helper('ewayrapid/customer')->getCustomerTokenId($token);
-                if(Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE){
+                if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
                     $method = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
                     $totalAmount = round($this->_quote->getBaseGrandTotal() * 100);
-                }else{
+                } else {
                     $method = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN ;
                 }
-            }else{
+            } else {
                 if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
                     $method = Eway_Rapid31_Model_Config::METHOD_PROCESS_PAYMENT;
                 } else {
@@ -118,21 +118,21 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         // add InvoiceDescription and InvoiceReference
         $config = Mage::getModel('ewayrapid/config');
 
-        if($config->shouldPassingInvoiceDescription()){
+        if ($config->shouldPassingInvoiceDescription()) {
             $invoiceDescription = '';
-            foreach($this->_quote->getAllVisibleItems() as $item){
+            foreach ($this->_quote->getAllVisibleItems() as $item) {
                 // Check in case multi-shipping
                 if (!$item->getQuoteParentItem()) {
                     $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
                 }
             }
-            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = trim($invoiceDescription, ', ');
             $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
 
             $paymentParam->setInvoiceDescription($invoiceDescription);
         }
 
-        if($config->shouldPassingGuessOrder()){
+        if ($config->shouldPassingGuessOrder()) {
             $incrementId = $this->_getIncrementOrderId($this->_quote);
             $paymentParam->setInvoiceReference($incrementId);
             $paymentParam->setInvoiceNumber($incrementId);
@@ -140,7 +140,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
 
         $this->setPayment($paymentParam);
 
-        if($this->_config->isSharedPageConnection()){
+        if ($this->_config->isSharedPageConnection()) {
             // add Verify options
             $this->setVerifyCustomerEmail($this->_config->getVerifyEmail());
             $this->setVerifyCustomerPhone($this->_config->getVerifyPhone());
@@ -199,21 +199,21 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         // add InvoiceDescription and InvoiceReference
         $config = Mage::getModel('ewayrapid/config');
 
-        if($config->shouldPassingInvoiceDescription()){
+        if ($config->shouldPassingInvoiceDescription()) {
             $invoiceDescription = '';
-            foreach($this->_quote->getAllVisibleItems() as $item){
+            foreach ($this->_quote->getAllVisibleItems() as $item) {
                 // Check in case multi-shipping
                 if (!$item->getQuoteParentItemId()) {
                     $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
                 }
             }
-            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = trim($invoiceDescription, ', ');
             $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
 
             $paymentParam->setInvoiceDescription($invoiceDescription);
         }
 
-        if($config->shouldPassingGuessOrder()){
+        if ($config->shouldPassingGuessOrder()) {
             $incrementId = $this->_getIncrementOrderId($this->_quote);
             $paymentParam->setInvoiceReference($incrementId);
         }
@@ -299,12 +299,12 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
     {
         // prepare API
         $this->setShippingMethod('Other');
-        $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
         $this->setDeviceID('Magento ' . Mage::getEdition() . ' ' . Mage::getVersion().' - eWAY '.$version);
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } else {
+            $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $this->setCustomerReadOnly(true);
@@ -505,7 +505,7 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $payment = Mage::getModel('ewayrapid/field_payment');
         $payment->setTotalAmount(1);
         $this->setPayment($payment);
-        $this->setRedirectUrl(Mage::getBaseUrl() . '/ewayrapid/sharedpage/saveToken');
+        $this->setRedirectUrl(Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . '/ewayrapid/sharedpage/saveToken');
         $this->setMethod('');
 
         $response = $this->_doRapidAPI('AccessCodesShared');
@@ -518,8 +518,12 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
             }
 
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while creating new token. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while creating new token. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
         if (!$token) {
             Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while process token. Please try again.'));
@@ -624,15 +628,20 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         return Mage::getSingleton('core/session')->getData('ewayMethod');
     }
 
-    public function getTransaction($transaction_number) {
+    public function getTransaction($transactionNumber) 
+    {
         try {
-            $results = $this->_doRapidAPI("Transaction/$transaction_number", 'GET');
+            $results = $this->_doRapidAPI("Transaction/$transactionNumber", 'GET');
             if ($results->isSuccess()) {
                 return $results->getTransactions();
             }
         } catch (Exception $e) {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
-                $results->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
+                    $results->getMessage()
+                )
+            );
             return false;
         }
     }

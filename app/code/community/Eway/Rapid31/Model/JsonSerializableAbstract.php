@@ -9,7 +9,7 @@ abstract class Eway_Rapid31_Model_JsonSerializableAbstract extends Varien_Object
      */
     public function getJsonData(array $rawData = null)
     {
-        if($rawData === null) {
+        if ($rawData === null) {
             $rawData = $this->_data;
         }
 

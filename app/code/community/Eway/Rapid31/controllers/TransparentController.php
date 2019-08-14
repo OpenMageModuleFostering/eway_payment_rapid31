@@ -9,31 +9,31 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
      */
     protected $_quote;
 
-    public static $_transparentmodel;
+    public static $transparentmodel;
 
-    protected $methodPayment;
-    protected $transMethod;
-    protected $paypalSavedToken;
-    protected $savedToken;
-    protected $cardInfo;
-    protected $masterPassSavedToken;
-    protected $saveCard;
+    protected $_methodPayment;
+    protected $_transMethod;
+    protected $_paypalSavedToken;
+    protected $_savedToken;
+    protected $_cardInfo;
+    protected $_masterPassSavedToken;
+    protected $_saveCard;
 
-    function _getSession()
+    public function _getSession()
     {
-        $this->methodPayment = Mage::getSingleton('core/session')->getMethod();
-        $this->transMethod = Mage::getSingleton('core/session')->getTransparentNotsaved();
-        if (!$this->transMethod) {
-            $this->transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
+        $this->_methodPayment = Mage::getSingleton('core/session')->getMethod();
+        $this->_transMethod = Mage::getSingleton('core/session')->getTransparentNotsaved();
+        if (!$this->_transMethod) {
+            $this->_transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
         }
 
-        $this->saveCard = Mage::getSingleton('core/session')->getSaveCard();
+        $this->_saveCard = Mage::getSingleton('core/session')->getSaveCard();
 
-        if ($this->methodPayment == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD
-            || $this->methodPayment == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
-            $this->savedToken = Mage::getSingleton('core/session')->getSavedToken();
+        if ($this->_methodPayment == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD
+            || $this->_methodPayment == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
+            $this->_savedToken = Mage::getSingleton('core/session')->getSavedToken();
         }
-        $this->cardInfo = Mage::getSingleton('core/session')->getCardInfo();
+        $this->_cardInfo = Mage::getSingleton('core/session')->getCardInfo();
     }
 
     /**
@@ -41,10 +41,10 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
      */
     protected function transparentModel()
     {
-        if (!self::$_transparentmodel) {
-            self::$_transparentmodel = Mage::getModel('ewayrapid/request_transparent');
+        if (!self::$transparentmodel) {
+            self::$transparentmodel = Mage::getModel('ewayrapid/request_transparent');
         }
-        return self::$_transparentmodel;
+        return self::$transparentmodel;
     }
 
     /**
@@ -75,20 +75,20 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             /** @var Eway_Rapid31_Model_Request_Sharedpage $sharedpageModel */
 
             $action = 'AccessCodes';
-            if ($this->methodPayment == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD) {
+            if ($this->_methodPayment == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD) {
                 $methodData = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
 
                 //Authorize Only
                 if ($this->helperData()->getPaymentAction() != Eway_Rapid31_Model_Method_Notsaved::ACTION_AUTHORIZE_CAPTURE
-                    || $this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
-                    if ($this->savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW)
+                    || $this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
+                    if ($this->_savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW)
                         $methodData = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN;
                     else
                         $methodData = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN;
                 }
-            } else if($this->methodPayment == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
-                if($visaCheckout = $this->getRequest()->getParam('visa_checkout_call_id')){
-                    if($visaCheckout && $visaCheckout != ""){
+            } else if ($this->_methodPayment == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
+                if ($visaCheckout = $this->getRequest()->getParam('visa_checkout_call_id')) {
+                    if ($visaCheckout && $visaCheckout != "") {
                         Mage::getSingleton('core/session')->setData('visa_checkout_call_id', $visaCheckout);
                     }
                 }
@@ -98,32 +98,30 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 //    && $this->transMethod != Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
                 //    && $this->transMethod != Eway_Rapid31_Model_Config::MASTERPASS_METHOD
                 //    && $this->transMethod != Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD
-                )
-                {
+                ) {
                     $methodData = Eway_Rapid31_Model_Config::METHOD_AUTHORISE;
                 }
 
-                if ($this->saveCard || ($this->savedToken && is_numeric($this->savedToken))) {
+                if ($this->_saveCard || ($this->_savedToken && is_numeric($this->_savedToken))) {
                     $methodData = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
                 }
 
                 //Authorize Only
                 if ($this->helperData()->getPaymentAction() != Eway_Rapid31_Model_Method_Notsaved::ACTION_AUTHORIZE_CAPTURE
-                    || $this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
+                    || $this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
                 ) {
-                    if ($this->savedToken && $this->savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW && $this->saveCard)
+                    if ($this->_savedToken && $this->_savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW && $this->_saveCard)
                         $methodData = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN;
-                    else if ($this->savedToken && is_numeric($this->savedToken))
+                    else if ($this->_savedToken && is_numeric($this->_savedToken))
                         $methodData = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN;
                 }
-            } else{
+            } else {
                 $methodData = Eway_Rapid31_Model_Config::METHOD_PROCESS_PAYMENT;
                 if ($this->helperData()->getPaymentAction() != Eway_Rapid31_Model_Method_Notsaved::ACTION_AUTHORIZE_CAPTURE
-                    && $this->transMethod != Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
-                    && $this->transMethod != Eway_Rapid31_Model_Config::MASTERPASS_METHOD
-                    && $this->transMethod != Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD
-                )
-                {
+                    && $this->_transMethod != Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
+                    && $this->_transMethod != Eway_Rapid31_Model_Config::MASTERPASS_METHOD
+                    && $this->_transMethod != Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD
+                ) {
                     $methodData = Eway_Rapid31_Model_Config::METHOD_AUTHORISE;
                 }
             }
@@ -134,10 +132,10 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 Mage::getSingleton('core/session')->setFormActionUrl($data['FormActionURL']);
                 if (isset($data['CompleteCheckoutURL']))
                     Mage::getSingleton('core/session')->setCompleteCheckoutURL($data['CompleteCheckoutURL']);
-                if ($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
-                    || $this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD
-                    || $this->transMethod == Eway_Rapid31_Model_Config::MASTERPASS_METHOD
-                    || $this->transMethod == Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD) {
+                if ($this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD
+                    || $this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD
+                    || $this->_transMethod == Eway_Rapid31_Model_Config::MASTERPASS_METHOD
+                    || $this->_transMethod == Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD) {
                     $urlRedirect = Mage::getUrl('ewayrapid/transparent/redirect', array('_secure'=>true)) . '?AccessCode=' . $data['AccessCode'];
                 } else {
                     $urlRedirect = Mage::getUrl('ewayrapid/transparent/paynow', array('_secure'=>true)) . '?AccessCode=' . $data['AccessCode'];
@@ -153,8 +151,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 ) {
                     $this->_redirectUrl($urlRedirect);
                     return;
-                }
-                else {
+                } else {
                     echo($urlRedirect);
                 }
             } else {
@@ -178,8 +175,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             ) {
                 $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
                 return;
-            }
-            else {
+            } else {
                 echo Mage::getUrl('checkout/cart/');
             }
             return;
@@ -223,20 +219,20 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             $quote = $this->_getQuote();
 
             $accessCode = $this->getRequest()->getParam('AccessCode');
-            $order_id = $transactionID = $tokenCustomerID = 0;
+            $orderId = $transactionID = $tokenCustomerID = 0;
 
             $fraudAction = '';
             $fraudCodes = '';
 
-            if ($this->methodPayment == 'ewayrapid_notsaved'
-                || ($this->methodPayment == 'ewayrapid_ewayone' && !$this->saveCard
-                    && (!$this->savedToken || !is_numeric($this->savedToken)))
+            if ($this->_methodPayment == 'ewayrapid_notsaved'
+                || ($this->_methodPayment == 'ewayrapid_ewayone' && !$this->_saveCard
+                    && (!$this->_savedToken || !is_numeric($this->_savedToken)))
             ) {
                 $dataResult = $this->resultProcess($accessCode);
                 $transactionID = $dataResult['TransactionID'];
 
                 $transaction = $this->transparentModel()->getTransaction($transactionID);
-                if($transaction) {
+                if ($transaction) {
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                     $captured = $transaction[0]['TransactionCaptured'];
@@ -244,7 +240,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 }
             } else {
                 $transaction = $this->transparentModel()->getTransaction($accessCode);
-                if($transaction) {
+                if ($transaction) {
                     $tokenCustomerID = $transaction && isset($transaction[0]['TokenCustomerID']) ? $transaction[0]['TokenCustomerID'] : null;
                     $fraudAction = $transaction[0]['FraudAction'];
                     $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
@@ -253,7 +249,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 }
                 $quote->setTokenCustomerID($tokenCustomerID);
 
-                if($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
+                if ($this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
                     /*
                     $dataResult = $this->resultProcess($accessCode);
                     $transactionID = $dataResult['TransactionID'];
@@ -271,7 +267,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
 
                         // Reload fraud information after do authorisation
                         $transaction = $this->transparentModel()->getTransaction($transactionID);
-                        if($transaction) {
+                        if ($transaction) {
                             $fraudAction = $transaction[0]['FraudAction'];
                             $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
                             $captured = $transaction[0]['TransactionCaptured'];
@@ -282,9 +278,9 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 $quote->setTransactionId($transactionID);
 
                 //Save Token
-                if($this->methodPayment == 'ewayrapid_saved'){
+                if ($this->_methodPayment == 'ewayrapid_saved') {
                     $this->saveToken($quote, $tokenCustomerID);
-                } elseif($this->methodPayment == 'ewayrapid_ewayone' && $this->saveCard) {
+                } elseif ($this->_methodPayment == 'ewayrapid_ewayone' && $this->_saveCard) {
                     $this->saveToken($quote, $tokenCustomerID);
                 }
 
@@ -295,20 +291,20 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 if (isset($dataResult)) {
                     $beagleScore = $dataResult->getBeagleScore();
                     $beagleVerification = $dataResult->getBeagleVerification();
-                }else{
+                } else {
                     $beagleScore = $quote->getBeagleScore();
                     $beagleVerification = $quote->getBeagleVerification();
                 }
                 Mage::getSingleton('core/session')->setTransactionId($transactionID);
                 //Save order
-                $order_id = $this->storeOrder('success', $transactionID, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured);
+                $orderId = $this->storeOrder($transactionID, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured, 'success');
             }
 
             //unset all session's transaparent
             $this->transparentModel()->unsetSessionData();
 
             // Redirect to success page
-            if ($order_id) {
+            if ($orderId) {
                 $this->_redirect('checkout/onepage/success');
                 return;
             } else {
@@ -330,8 +326,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             ) {
                 $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
                 return;
-            }
-            else {
+            } else {
                 //echo Mage::getUrl('checkout/cart/');
                 $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
             }
@@ -342,7 +337,8 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
     /**
      * @param $accessCode
      */
-    protected  function resultProcess($accessCode) {
+    protected  function resultProcess($accessCode) 
+    {
         return $this->transparentModel()->getInfoByAccessCode($accessCode);
     }
 
@@ -350,25 +346,27 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
      * @param $quote
      * @param $tokenCustomerID
      */
-    protected function saveToken($quote, $tokenCustomerID) {
-        if ($this->savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->paypalSavedToken == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->masterPassSavedToken == Eway_Rapid31_Model_Config::TOKEN_NEW) {
-            $this->cardInfo['SavedType'] = Eway_Rapid31_Model_Config::CREDITCARD_METHOD;
+    protected function saveToken($quote, $tokenCustomerID) 
+    {
+        if ($this->_savedToken == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->_paypalSavedToken == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->_masterPassSavedToken == Eway_Rapid31_Model_Config::TOKEN_NEW) {
+            $this->_cardInfo['SavedType'] = Eway_Rapid31_Model_Config::CREDITCARD_METHOD;
 
-            if ($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
-                $this->cardInfo['SavedType'] = Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD;
-            } elseif ($this->transMethod == Eway_Rapid31_Model_Config::MASTERPASS_METHOD) {
-                $this->cardInfo['SavedType'] = Eway_Rapid31_Model_Config::MASTERPASS_METHOD;
-            } elseif ($this->transMethod == Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD) {
-                $this->cardInfo['SavedType'] = Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD;
+            if ($this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
+                $this->_cardInfo['SavedType'] = Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD;
+            } elseif ($this->_transMethod == Eway_Rapid31_Model_Config::MASTERPASS_METHOD) {
+                $this->_cardInfo['SavedType'] = Eway_Rapid31_Model_Config::MASTERPASS_METHOD;
+            } elseif ($this->_transMethod == Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD) {
+                $this->_cardInfo['SavedType'] = Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD;
             }
-            $this->transparentModel()->addToken($quote, $this->cardInfo, $tokenCustomerID);
+            $this->transparentModel()->addToken($quote, $this->_cardInfo, $tokenCustomerID);
         } else {
-            $this->transparentModel()->updateToken($tokenCustomerID, $this->cardInfo);
+            $this->transparentModel()->updateToken($tokenCustomerID, $this->_cardInfo);
         }
         return true;
     }
 
-    protected function authorizeOnly() {
+    protected function authorizeOnly() 
+    {
 
     }
     /**
@@ -387,7 +385,7 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
      * @param $transactionID
      * @return string
      */
-    private function storeOrder($successType = 'success', $transactionID, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured)
+    private function storeOrder($transactionID, $beagleScore, $beagleVerification, $fraudAction, $fraudCodes, $captured, $successType = 'success')
     {
         try {
             //Clear the basket and save the order (including some info about how the payment went)
@@ -492,10 +490,12 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             $quote->getShippingAddress()->setShippingMethod($shippingMethod)->save();
 
             if ($cRate) {
-                echo json_encode(array(
+                echo json_encode(
+                    array(
                     'form_action' => Mage::getSingleton('core/session')->getFormActionUrl(),
                     'input_post' => '<input type="hidden" name="EWAY_NEWSHIPPINGTOTAL" value="' . round($cRate->getPrice() * 100) . '" />',
-                ));
+                    )
+                );
             } else {
                 $this->transparentModel()->unsetSessionData();
                 Mage::throwException($this->__('Method not found.'));

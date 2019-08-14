@@ -4,7 +4,7 @@
  */ 
 class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 {
-    protected $_address	= null;
+    protected $_address    = null;
     private $_ccTypeNames = null;
     private $_isSaveMethodEnabled = null;
     private $_beagleVerificationCodes = array(
@@ -28,7 +28,7 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $fieldsToSerialize = array('is_new_token', 'is_update_token', 'saved_token');
         $data = array();
-        foreach($fieldsToSerialize as $field) {
+        foreach ($fieldsToSerialize as $field) {
             $data[$field] = $info->getData($field);
         }
 
@@ -47,7 +47,7 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
             return 'PayPal';
         }
 
-        if(is_null($this->_ccTypeNames)) {
+        if (is_null($this->_ccTypeNames)) {
             $this->_ccTypeNames = Mage::getSingleton('payment/config')->getCcTypes();
         }
         return (isset($this->_ccTypeNames[$type]) ? $this->_ccTypeNames[$type] : 'Unknown');
@@ -55,7 +55,7 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function isSavedMethodEnabled()
     {
-        if(is_null($this->_isSaveMethodEnabled)) {
+        if (is_null($this->_isSaveMethodEnabled)) {
             $savedEnable = Mage::getSingleton('ewayrapid/method_saved')->getConfigData('active');
             $ewayOneEnable = Mage::getSingleton('ewayrapid/method_ewayone')->getConfigData('active');
             $this->_isSaveMethodEnabled = $ewayOneEnable ? $ewayOneEnable : $savedEnable;
@@ -106,9 +106,9 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $lineItems = array();
         /** @var Mage_Sales_Model_Quote $quote */
-        if(!$this->isBackendOrder()){
+        if (!$this->isBackendOrder()) {
             $quote = Mage::getSingleton('checkout/session')->getQuote();
-        }else{
+        } else {
             $quote = Mage::getSingleton('adminhtml/session_quote')->getQuote();
         }
         if ($quote) {
@@ -169,8 +169,8 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function limitInvoiceDescriptionLength($description)
     {
-        if(strlen($description) > 64){
-            $description = substr($description,0,61);
+        if (strlen($description) > 64) {
+            $description = substr($description, 0, 61);
             $description .= '...';
         }
 
@@ -193,9 +193,9 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 
         $fraudCodes = array();
 
-        foreach($codes as $code){
+        foreach ($codes as $code) {
             $code = trim($code);
-            if(substr($code,0,1) == "F"){
+            if (substr($code, 0, 1) == "F") {
                 $fraudCodes[] = $code;
             }
         }
@@ -208,7 +208,7 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getAddressBlock()
     {
-        if( is_null( $this->_address ) ) {
+        if ( is_null($this->_address) ) {
             $this->_address = Mage::app()->getLayout()->createBlock('directory/data');
         }
 
@@ -220,10 +220,11 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getCountryHtmlSelect( $name, $default='US', $id=null )
     {
-        return $this->getAddressBlock()->getCountryHtmlSelect( $default, $name, $id );
+        return $this->getAddressBlock()->getCountryHtmlSelect($default, $name, $id);
     }
 
-    public function useIframeInBackend(){
+    public function useIframeInBackend()
+    {
         $_config = Mage::getSingleton('ewayrapid/config');
         $isBackend = $this->isBackendOrder();
 

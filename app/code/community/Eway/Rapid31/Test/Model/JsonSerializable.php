@@ -3,7 +3,8 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
 {
     public function testDummyData()
     {
-        $this->assertJsonMatch($this->getDummyShippingAddress()->jsonSerialize(),
+        $this->assertJsonMatch(
+            $this->getDummyShippingAddress()->jsonSerialize(),
             '{ "FirstName": "John",
                 "LastName": "Smith",
                 "Street1": "Level 5",
@@ -12,9 +13,11 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
                 "State": "",
                 "Country": "nz",
                 "PostalCode": "1010",
-                "Phone": "09 889 0986" }');
+                "Phone": "09 889 0986" }'
+        );
 
-        $this->assertJsonMatch($this->getDummyCardDetails()->jsonSerialize(),
+        $this->assertJsonMatch(
+            $this->getDummyCardDetails()->jsonSerialize(),
             '{ "Name": "Card Holder Name",
                  "Number": "4444333322221111",
                  "ExpiryMonth": "12",
@@ -22,25 +25,31 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
                  "StartMonth" : "",
                  "StartYear" : "",
                  "IssueNumber": "",
-                 "CVN": "123" }');
+                 "CVN": "123" }'
+        );
 
-        $this->assertJsonMatch($this->getDummyLineItem(1)->jsonSerialize(),
+        $this->assertJsonMatch(
+            $this->getDummyLineItem(1)->jsonSerialize(),
             '{ "SKU": "SKU1",
                "Description": "Description1",
                "Quantity": 1,
                "UnitCost": 100,
                "Tax": 0,
-               "Total": 100 }');
+               "Total": 100 }'
+        );
 
-        $this->assertJsonMatch($this->getDummyPayment()->jsonSerialize(),
+        $this->assertJsonMatch(
+            $this->getDummyPayment()->jsonSerialize(),
             '{ "TotalAmount": 100,
                "InvoiceNumber": "Inv 21540",
                "InvoiceDescription": "Individual Invoice Description",
                "InvoiceReference": "513456",
                "CurrencyCode": "AUD"
-            }');
+            }'
+        );
 
-        $this->assertJsonMatch($this->getDummyCustomer()->jsonSerialize(),
+        $this->assertJsonMatch(
+            $this->getDummyCustomer()->jsonSerialize(),
             '{
                "Reference": "A12345",
                "Title": "Mr.",
@@ -70,7 +79,8 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
                  "IssueNumber": "",
                  "CVN": "123"
                }
-            }');
+            }'
+        );
     }
 
     public function testRequestDirect()
@@ -87,8 +97,9 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
             ->setTransactionType('Purchase')
             ->setMethod('ProcessPayment');
 
-        $this->assertJsonMatch($request->jsonSerialize(),
-        '{ "Customer": {
+        $this->assertJsonMatch(
+            $request->jsonSerialize(),
+            '{ "Customer": {
                "Reference": "A12345",
                "Title": "Mr.",
                "FirstName": "John",
@@ -168,14 +179,16 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
             "PartnerID": "04A0FD665F7348A295C5B9EE95400301",
             "TransactionType": "Purchase",
             "Method": "ProcessPayment"
-        }');
+        }'
+        );
     }
 
     public function testMaskedCardDetails()
     {
         $cardDetails = $this->getDummyCardDetails();
         $cardDetails->shouldBeMasked();
-        $this->assertJsonMatch($cardDetails->jsonSerialize(),
+        $this->assertJsonMatch(
+            $cardDetails->jsonSerialize(),
             '{ "Name": "Card Holder Name",
                  "Number": "444433******1111",
                  "ExpiryMonth": "**",
@@ -183,10 +196,12 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
                  "StartMonth" : "",
                  "StartYear" : "",
                  "IssueNumber": "",
-                 "CVN": "***" }');
+                 "CVN": "***" }'
+        );
 
         $cardDetails->shouldBeMasked(false);
-        $this->assertJsonMatch($cardDetails->jsonSerialize(),
+        $this->assertJsonMatch(
+            $cardDetails->jsonSerialize(),
             '{ "Name": "Card Holder Name",
                  "Number": "4444333322221111",
                  "ExpiryMonth": "12",
@@ -194,6 +209,7 @@ class Eway_Rapid31_Test_Model_JsonSerializable extends Eway_Rapid31_Test_Model_A
                  "StartMonth" : "",
                  "StartYear" : "",
                  "IssueNumber": "",
-                 "CVN": "123" }');
+                 "CVN": "123" }'
+        );
     }
 }

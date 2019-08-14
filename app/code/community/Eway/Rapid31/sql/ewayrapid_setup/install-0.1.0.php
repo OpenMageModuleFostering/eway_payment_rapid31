@@ -6,7 +6,8 @@ $installer->startSetup();
 
 $setup = Mage::getResourceModel('customer/setup', 'core_setup');
 
-$setup->addAttribute('customer', 'saved_tokens_json', array(
+$setup->addAttribute(
+    'customer', 'saved_tokens_json', array(
     'input' => '',
     'type' => 'text',
     'label' => '',
@@ -14,6 +15,7 @@ $setup->addAttribute('customer', 'saved_tokens_json', array(
     'required' => '0',
     'user_defined' => '0',
     'backend' => 'ewayrapid/backend_savedtokens',
-));
+    )
+);
 
 $installer->endSetup();

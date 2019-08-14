@@ -59,7 +59,8 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
      * @param string $method
      * @return Eway_Rapid31_Model_Response
      */
-    protected function _doRapidAPI($action, $method = 'POST') {
+    protected function _doRapidAPI($action, $method = 'POST') 
+    {
 
         $url = $this->_config->getRapidAPIUrl($action);
         $mode = $this->_config->isSandbox() ? '(Sandbox)' : '(Live)';
@@ -99,19 +100,19 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
             $this->_log("There is an error in making API request: " . curl_error($ch));
         } else {
             $info = curl_getinfo($ch);
-            $http_code = intval(trim($info['http_code']));
-            if ($http_code == 401 || $http_code == 404 || $http_code == 403) {
+            $httpCode = intval(trim($info['http_code']));
+            if ($httpCode == 401 || $httpCode == 404 || $httpCode == 403) {
                 $response->isSuccess(false);
                 $response->setMessage(Mage::helper('ewayrapid')->__("Please check the API Key and Password %s", $mode));
                 $this->_log('Access denied. HTTP_CODE = ' . $info['http_code']);
-            } elseif ($http_code != 200) {
+            } elseif ($httpCode != 200) {
                 $response->isSuccess(false);
                 $response->setMessage(Mage::helper('ewayrapid')->__("Error connecting to payment gateway, please try again"));
                 $this->_log('Error connecting to payment gateway. HTTP_CODE = ' . $info['http_code']);
             } else {
                 $response->isSuccess(true);
                 $response->decodeJSON($result);
-                if($this->_config->isDebug()) {
+                if ($this->_config->isDebug()) {
                     $this->_log('SUCCESS. Response body: ');
                     $this->_log(print_r(json_decode($result, true), true));
                 }
@@ -126,15 +127,15 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
 
     protected function _logPostJSON()
     {
-        if($this->_config->isDebug()) {
+        if ($this->_config->isDebug()) {
             $cardDetails = null;
-            if($this->getCustomer() && $this->getCustomer()->getCardDetails()) {
+            if ($this->getCustomer() && $this->getCustomer()->getCardDetails()) {
                 $cardDetails = $this->getCustomer()->getCardDetails();
                 $cardDetails->shouldBeMasked();
             }
             $this->_log('Request body:');
             $this->_log(print_r($this->getJsonData(), true));
-            if(!is_null($cardDetails)) {
+            if ($cardDetails !== null) {
                 $cardDetails->shouldBeMasked(false);
             }
         }
@@ -142,12 +143,13 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
 
     protected function _log($message, $file = self::DEBUG_FILE)
     {
-        if($this->_config->isDebug()) {
+        if ($this->_config->isDebug()) {
             Mage::log($message, Zend_Log::DEBUG, $file, true);
         }
     }
     
-    protected function _fixTitle($title) {
+    protected function _fixTitle($title) 
+    {
         if ($title == 'n/a' || empty($title)) {
             return 'Mr.';
         }

@@ -65,8 +65,12 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             Mage::helper('ewayrapid/customer')->addToken($tokenInfo);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while creating new token. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while creating new token. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -139,8 +143,12 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             Mage::helper('ewayrapid/customer')->updateToken($infoInstance->getSavedToken(), $tokenInfo);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while updating token. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while updating token. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
@@ -164,15 +172,13 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
                 $shipping = $quote->getBillingAddress();
             }
         }
-        
-        if (!$payment->getIsRecurring()) {
-            $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
-        }
+
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);
         } elseif ($payment->getIsRecurring()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_RECURRING);
         } else {
+            $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_PURCHASE);
         }
         $version = Mage::helper('ewayrapid')->getExtensionVersion();
@@ -186,21 +192,21 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         // add InvoiceDescription and InvoiceReference
         $config = Mage::getModel('ewayrapid/config');
 
-        if($config->shouldPassingInvoiceDescription()){
+        if ($config->shouldPassingInvoiceDescription()) {
             $invoiceDescription = '';
-            foreach($order->getAllVisibleItems() as $item){
+            foreach ($order->getAllVisibleItems() as $item) {
                 // Check in case multi-shipping
                 if (!$item->getQuoteParentItemId()) {
                     $invoiceDescription .= (int) $item->getQtyOrdered() . ' x ' .$item->getName() . ', ';
                 }
             }
-            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = trim($invoiceDescription, ', ');
             $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
 
             $paymentParam->setInvoiceDescription($invoiceDescription);
         }
 
-        if($config->shouldPassingGuessOrder()){
+        if ($config->shouldPassingGuessOrder()) {
             $paymentParam->setInvoiceReference($order->getIncrementId());
         }
 
@@ -220,8 +226,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             if ($infoInstance->getSavedToken()) {
                 $customerHelper = Mage::helper('ewayrapid/customer');
                 $customerTokenId = $customerHelper->getCustomerTokenId($infoInstance->getSavedToken());
-            }
-            else {
+            } else {
                 Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction: Token info does not exist.'));
             }
         }
@@ -311,18 +316,19 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             ->setFax($billing->getFax())
             ->setUrl('');
 
-        $returnUrl = Mage::getBaseUrl() . '/ewayrapid/mycards/saveToken?ccType='
+        $returnUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true)
+            . '/ewayrapid/mycards/saveToken?ccType='
             . $infoInstance->getCcType() . '&expYear=' . $infoInstance->getCcExpYear();
         if ($request->get('is_default') == 'on') {
             $returnUrl .= '&is_default=on';
         }
-        if($infoInstance->getCcStartMonth()) {
+        if ($infoInstance->getCcStartMonth()) {
             $returnUrl .= '&startMonth=' . $infoInstance->getCcStartMonth();
         }
-        if($infoInstance->getCcStartYear()) {
+        if ($infoInstance->getCcStartYear()) {
             $returnUrl .= '&startYear=' . $infoInstance->getCcStartYear();
         }
-        if($infoInstance->getCcIssueNumber()) {
+        if ($infoInstance->getCcIssueNumber()) {
             $returnUrl .= '&issueNumber=' . $infoInstance->getCcIssueNumber();
         }
         // Binding address on url param
@@ -344,7 +350,6 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $this->setCustomerReadOnly(true);
 
         // Create new access code
-        //$formMethod = !empty($tokenCustomerID) ? 'PUT' : 'POST';
         $response = $this->_doRapidAPI($method);
         return $response;
     }
@@ -367,7 +372,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $customerParam->setTokenCustomerID($cardData['token']);
         $payment = Mage::getModel('ewayrapid/field_payment');
         $payment->setTotalAmount(1);
-        $returnUrl = Mage::getBaseUrl() . '/ewayrapid/mycards';
+        $returnUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true) . '/ewayrapid/mycards';
 
         $this->setCustomer($customerParam);
         $this->setPayment($payment);
@@ -390,7 +395,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
 
     }
 
-    private function __createNewTokenTransparentOrSharedPage($response, $cardData)
+    protected function __createNewTokenTransparentOrSharedPage($response, $cardData)
     {
         if ($response->isSuccess()) {
             $data = $response->getData();
@@ -433,12 +438,16 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             Mage::helper('ewayrapid/customer')->addToken($tokenInfo);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while creating new token. Please try again. (Error message: %s)',
-                $response->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while creating new token. Please try again. (Error message: %s)',
+                    $response->getMessage()
+                )
+            );
         }
     }
 
-    private function __updateTokenTransparentOrSharedPage($res, $cardData)
+    protected function __updateTokenTransparentOrSharedPage($res, $cardData)
     {
         if ($res->isSuccess()) {
             $data = $res->getData();
@@ -488,8 +497,12 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             Mage::helper('ewayrapid/customer')->updateToken($cardData['token_id'], $tokenInfo);
             return $this;
         } else {
-            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while creating new token. Please try again. (Error message: %s)',
-                $res->getMessage()));
+            Mage::throwException(
+                Mage::helper('ewayrapid')->__(
+                    'An error occurred while creating new token. Please try again. (Error message: %s)',
+                    $res->getMessage()
+                )
+            );
         }
     }
 
@@ -514,7 +527,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         }
         if (preg_match('/^(2131|1800)/', $num)) {
                 return 'JCB';
-            }
+        }
         if (preg_match('/^36/', $num)) {
             return 'DC';
         }

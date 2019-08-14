@@ -236,18 +236,24 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
         // Enabled method save
         if (!Mage::helper('ewayrapid')->isSavedMethodEnabled()) {
             //$this->_redirect('*/*/');
-            $this->getResponse()->setBody(json_encode(array(
-                'msg' => 'Access denied!'
-            )));
+            $this->getResponse()->setBody(
+                json_encode(
+                    array(
+                    'msg' => 'Access denied!'
+                    )
+                )
+            );
             return;
         }
 
         // Check session timeout
         $session = Mage::getSingleton('customer/session', array('name' => 'frontend'));
         if (!$session->isLoggedIn()) {
-            $this->getResponse()->setBody(json_encode(
-                array('login' => false)
-            ));
+            $this->getResponse()->setBody(
+                json_encode(
+                    array('login' => false)
+                )
+            );
             return;
         }
 
@@ -315,7 +321,7 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
             $redirectUrl = $apiRequest->getRedirectUrl();
 
             $redirectUrl = Mage::getModel('core/url')->parseUrl($redirectUrl)
-                ->setQueryParam('AccessCode',$data->getAccessCode());
+                ->setQueryParam('AccessCode', $data->getAccessCode());
 
             $redirectUrl = Mage::getUrl('*/*/saveToken', $redirectUrl->getQueryParams());
 
@@ -344,7 +350,7 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
         $accessCode = $req->get('AccessCode');
         $ccType = $req->get('ccType');
         $expYear = $req->get('expYear');
-        $token_id = $req->get('token_id');
+        $tokenId = $req->get('token_id');
 
         if (isset($accessCode)) {
             $apiRequest = Mage::getModel('ewayrapid/request_token');
@@ -352,7 +358,7 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
             $result = $apiRequest->getInfoByAccessCode($accessCode);
             $data = $result->getData();
 
-            $token_customer_id = $data['TokenCustomerID'];
+            $tokenCustomerId = $data['TokenCustomerID'];
 
             /**
              * TEST TOKEN ID NULL
@@ -362,15 +368,15 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
              * END TEST
              */
 
-            if (isset($token_customer_id) && !empty($token_customer_id)) {
+            if (isset($tokenCustomerId) && !empty($tokenCustomerId)) {
                 $apiRequest = Mage::getModel('ewayrapid/request_token');
                 $street1 = $req->get('street1');
                 $street2 = $req->get('street2');
                 $cardData = array(
-                    'token' => $token_customer_id,
+                    'token' => $tokenCustomerId,
                     'ccType' => $ccType,
                     'expYear' => $expYear,
-                    'token_id' => $token_id,
+                    'token_id' => $tokenId,
                     'startMonth' => $req->get('startMonth'),
                     'startYear' => $req->get('startYear'),
                     'issueNumber' => $req->get('issueNumber'),
@@ -381,7 +387,7 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
                 $apiRequest->saveInfoByTokenId($cardData);
                 if ($req->getParam('is_default')) {
                     //Mage::helper('ewayrapid/customer')->getLastTokenId()
-                    Mage::helper('ewayrapid/customer')->setDefaultToken($token_id ? $token_id : Mage::helper('ewayrapid/customer')->getLastTokenId());
+                    Mage::helper('ewayrapid/customer')->setDefaultToken($tokenId ? $tokenId : Mage::helper('ewayrapid/customer')->getLastTokenId());
                 }
                 // Add flash message
                 $this->_getSession()->addSuccess($this->__('Your Credit Card has been saved successfully.'));

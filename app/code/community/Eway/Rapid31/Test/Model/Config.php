@@ -32,10 +32,12 @@ class Eway_Rapid31_Test_Model_Config extends Eway_Rapid31_Test_Model_Abstract
     {
         $this->_mockSessionObject();
 
-        $this->setConfig(array(
+        $this->setConfig(
+            array(
             'payment/ewayrapid_notsaved/active' => 1,
             'payment/ewayrapid_saved/active' => 1,
-        ));
+            )
+        );
         $this->assertEquals(1, Mage::getStoreConfig('payment/ewayrapid_notsaved/active'));
         $this->assertEquals(1, Mage::getStoreConfig('payment/ewayrapid_saved/active'));
 
@@ -44,9 +46,11 @@ class Eway_Rapid31_Test_Model_Config extends Eway_Rapid31_Test_Model_Abstract
 
         $this->assertFalse($methodNotSaved->getConfigData('active'));
         $this->assertFalse($methodSaved->getConfigData('active'));
-        $this->setConfig(array(
+        $this->setConfig(
+            array(
             'payment/ewayrapid_general/active' => 1,
-        ));
+            )
+        );
         $this->assertTrue($methodNotSaved->getConfigData('active'));
         $this->assertTrue($methodSaved->getConfigData('active'));
     }
@@ -55,9 +59,11 @@ class Eway_Rapid31_Test_Model_Config extends Eway_Rapid31_Test_Model_Abstract
     {
         $this->assertFalse(Mage::getModel('ewayrapid/config')->isEnableSSLVerification());
 
-        $this->setConfig(array(
+        $this->setConfig(
+            array(
             'payment/ewayrapid_general/mode' => 'live',
-        ));
+            )
+        );
 
         $this->assertTrue(Mage::getModel('ewayrapid/config')->isEnableSSLVerification());
     }

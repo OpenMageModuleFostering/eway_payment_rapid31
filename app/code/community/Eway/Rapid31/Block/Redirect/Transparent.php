@@ -2,24 +2,24 @@
 
 class Eway_Rapid31_Block_Redirect_Transparent extends Mage_Core_Block_Template
 {
-    protected $methodPayment;
-    protected $transMethod;
-    protected $paypalSavedToken;
-    protected $savedToken;
+    protected $_methodPayment;
+    protected $_transMethod;
+    protected $_paypalSavedToken;
+    protected $_savedToken;
 
     public function _construct()
     {
-        $this->methodPayment = Mage::getSingleton('core/session')->getMethod();
-        $this->transMethod = Mage::getSingleton('core/session')->getTransparentNotsaved();
-        if (!$this->transMethod) {
-            $this->transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
+        $this->_methodPayment = Mage::getSingleton('core/session')->getMethod();
+        $this->_transMethod = Mage::getSingleton('core/session')->getTransparentNotsaved();
+        if (!$this->_transMethod) {
+            $this->_transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
         }
 
-        if ($this->methodPayment == 'ewayrapid_saved' || $this->methodPayment == 'ewayrapid_ewayone') {
-            if ($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
-                $this->paypalSavedToken = Mage::getSingleton('core/session')->getPaypalSavedToken();
+        if ($this->_methodPayment == 'ewayrapid_saved' || $this->_methodPayment == 'ewayrapid_ewayone') {
+            if ($this->_transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD) {
+                $this->_paypalSavedToken = Mage::getSingleton('core/session')->getPaypalSavedToken();
             } else {
-                $this->savedToken = Mage::getSingleton('core/session')->getSavedToken();
+                $this->_savedToken = Mage::getSingleton('core/session')->getSavedToken();
             }
         }
 

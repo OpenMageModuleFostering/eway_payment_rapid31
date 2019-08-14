@@ -2,7 +2,8 @@
 /**
  * 
  */
-class Eway_Rapid31_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Sales_Order_Grid {
+class Eway_Rapid31_Block_Sales_Order_Grid extends Mage_Adminhtml_Block_Sales_Order_Grid
+{
 
     protected function _prepareMassaction()
     {
