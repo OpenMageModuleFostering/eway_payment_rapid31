@@ -253,7 +253,9 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
 
         $method = 'AccessCodes';
         if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
-            === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+            === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE ||
+            Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+            === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
         ) {
             $method = 'AccessCodesShared';
         }
@@ -305,6 +307,19 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
         ) {
             $data = $data->getData();
             return $this->_redirectUrl($data['SharedPaymentUrl']);
+        }
+
+        if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+            === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+        ) {
+            $redirectUrl = $apiRequest->getRedirectUrl();
+
+            $redirectUrl = Mage::getModel('core/url')->parseUrl($redirectUrl)
+                ->setQueryParam('AccessCode',$data->getAccessCode());
+
+            $redirectUrl = Mage::getUrl('*/*/saveToken', $redirectUrl->getQueryParams());
+
+            $data->setReturnUrl($redirectUrl);
         }
 
         $data = json_encode($data->getData());
@@ -379,22 +394,7 @@ class Eway_Rapid31_MycardsController extends Mage_Core_Controller_Front_Action
 
     }
 
-    /*public function getTransactionAction() {
-        $url = 'https://api.sandbox.ewaypayments.com/Transaction/10889350';
-        //echo $url; die();
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: application/json"));
-        curl_setopt($ch, CURLOPT_USERPWD, 'A1001CO7f5Se/wnuCkN96LX02vLgZlLfDVdbxDZzFgm+YsxckCiIG8d5mZzHXCProMwr7C:abc12345');
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-        $result = curl_exec($ch);
-        var_dump (json_decode($result)); die();
-    }
-
+    /*
     public function queryFraudAction() {
         $cron = new Eway_Rapid31_Model_EwayCron();
         $cron->querySuspectFraud();

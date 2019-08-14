@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Eway_Rapid31>
-            <version>1.3.2</version>
+            <version>1.4.0</version>
         </Eway_Rapid31>
     </modules>
     <global>
@@ -23,6 +23,7 @@
             <adminhtml>
                 <rewrite>
                     <sales_order_grid>Eway_Rapid31_Block_Sales_Order_Grid</sales_order_grid>
+                    <page_head>Eway_Rapid31_Block_Html_Head</page_head>
                 </rewrite>
             </adminhtml>
         </blocks>
@@ -36,6 +37,7 @@
             <ewayrapid_setup>
                 <setup>
                     <module>Eway_Rapid31</module>
+                    <class>Eway_Rapid31_Model_Resource_Setup</class>
                 </setup>
             </ewayrapid_setup>
         </resources>
@@ -60,6 +62,42 @@
                 </types>
             </cc>
         </payment>
+        <fieldsets>
+            <sales_convert_quote_payment>
+                <fraud_action>
+                    <to_order_payment>*</to_order_payment>
+                </fraud_action>
+                <fraud_codes>
+                    <to_order_payment>*</to_order_payment>
+                </fraud_codes>
+                <transaction_captured>
+                    <to_order_payment>*</to_order_payment>
+                </transaction_captured>
+                <beagle_score>
+                    <to_order_payment>*</to_order_payment>
+                </beagle_score>
+                <beagle_verification>
+                    <to_order_payment>*</to_order_payment>
+                </beagle_verification>
+            </sales_convert_quote_payment>
+            <sales_convert_order_payment>
+                <fraud_action>
+                    <to_quote_payment>*</to_quote_payment>
+                </fraud_action>
+                <fraud_codes>
+                    <to_order_payment>*</to_order_payment>
+                </fraud_codes>
+                <transaction_captured>
+                    <to_order_payment>*</to_order_payment>
+                </transaction_captured>
+                <beagle_score>
+                    <to_order_payment>*</to_order_payment>
+                </beagle_score>
+                <beagle_verification>
+                    <to_order_payment>*</to_order_payment>
+                </beagle_verification>
+            </sales_convert_order_payment>
+        </fieldsets>
     </global>
     <frontend>
         <translate>
@@ -220,6 +258,7 @@
                 <args>
                     <modules>
                         <eway_rapid31_adminhtml after="Mage_Adminhtml">Eway_Rapid31_Adminhtml</eway_rapid31_adminhtml>
+                        <eway_rapid31 before="-">Eway_Rapid31_Adminhtml</eway_rapid31>
                     </modules>
                 </args>
             </adminhtml>
@@ -261,6 +300,17 @@
                 </children>
             </system>
         </menu>-->
+        <menu>
+            <sales>
+                <children>
+                    <eway_orders>
+                        <title>eWAY</title>
+                        <action>adminhtml/ewayadmin/ewayorders</action>
+                        <sort_order>100</sort_order>
+                    </eway_orders>
+                </children>
+            </sales>
+        </menu>
     </adminhtml>
     <default>
         <payment>
@@ -293,7 +343,13 @@
                 <active>0</active>
                 <title>Credit Card - eWAY (saved)</title>
             </ewayrapid_saved>
-
+            <ewayrapid_ewayone>
+                <model>ewayrapid/method_ewayone</model>
+                <active>0</active>
+                <title>Credit Card - eWAY</title>
+                <save_card>1</save_card>
+                <save_text>Save my details</save_text>
+            </ewayrapid_ewayone>
         </payment>
     </default>
     <phpunit>

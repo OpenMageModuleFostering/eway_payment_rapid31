@@ -213,15 +213,15 @@ class Eway_Rapid31_Model_Observer {
     }
 
     /**
-     * load recurring profile if methodcode = ewayrapid_saved
+     * load recurring profiles if methodcode = ewayrapid_saved or ewayrapid_ewayone
      *
-     * @param string $methodCode
+     * @param array $methodCode
      * @return array
      */
-    protected function _loadProfileByMethod($methodCode = 'ewayrapid_saved')
+    protected function _loadProfileByMethod($methodCode = ['ewayrapid_saved', 'ewayrapid_ewayone'])
     {
         $modelRecurringProfile = Mage::getModel('sales/recurring_profile')->getCollection()
-            ->addFieldToFilter('method_code', $methodCode)
+            ->addFieldToFilter('method_code', array('in' => $methodCode))
             ->addFieldToFilter('state', 'active')
             ->addFieldToFilter('additional_info', array('notnull' => true))
             ->addFieldToFilter('period_max_cycles', array(

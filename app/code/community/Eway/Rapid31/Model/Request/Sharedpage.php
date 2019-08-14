@@ -40,13 +40,44 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $totalAmount = 0;
 
         if ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD) {
-        if ($this->_isNewToken()) {
-            $returnUrl .= '?newToken=1';
-            $method = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN;
-        } elseif ($token = $this->_editToken()) {
-            $returnUrl .= '?editToken=' . $token;
-            $token = Mage::helper('ewayrapid/customer')->getCustomerTokenId($token);
-            $method = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN;
+            if ($this->_isNewToken()) {
+                $returnUrl .= '?newToken=1';
+                $method = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN;
+            } elseif ($token = $this->_editToken()) {
+                $returnUrl .= '?editToken=' . $token;
+                $token = Mage::helper('ewayrapid/customer')->getCustomerTokenId($token);
+                $method = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN;
+            }
+        } elseif ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD) {
+            if ($this->_isNewToken()) {
+                $returnUrl .= '?newToken=1';
+                if(Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE){
+                    $method = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
+                    $totalAmount = round($this->_quote->getBaseGrandTotal() * 100);
+                }else{
+                    $method = Eway_Rapid31_Model_Config::METHOD_CREATE_TOKEN ;
+                }
+            } elseif ($token = $this->_editToken()) {
+                $returnUrl .= '?editToken=' . $token;
+                $token = Mage::helper('ewayrapid/customer')->getCustomerTokenId($token);
+                if(Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE){
+                    $method = Eway_Rapid31_Model_Config::METHOD_TOKEN_PAYMENT;
+                    $totalAmount = round($this->_quote->getBaseGrandTotal() * 100);
+                }else{
+                    $method = Eway_Rapid31_Model_Config::METHOD_UPDATE_TOKEN ;
+                }
+            }else{
+                if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
+                    $method = Eway_Rapid31_Model_Config::METHOD_PROCESS_PAYMENT;
+                } else {
+                    $method = Eway_Rapid31_Model_Config::METHOD_AUTHORISE;
+                }
+                $totalAmount = round($this->_quote->getBaseGrandTotal() * 100);
+                $paypal = $this->_getPaypalCheckout();
+                if ($paypal === Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD) {
+                    $this->setCheckoutPayment(true);
+                    $this->setCheckoutURL(Mage::getUrl('ewayrapid/sharedpage/review'));
+                }
             }
         } else {
             if (Mage::helper('ewayrapid')->getPaymentAction() === Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE_CAPTURE) {
@@ -83,7 +114,41 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($totalAmount);
         $paymentParam->setCurrencyCode($this->_quote->getBaseCurrencyCode());
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($this->_quote->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItem()) {
+                    $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $incrementId = $this->_getIncrementOrderId($this->_quote);
+            $paymentParam->setInvoiceReference($incrementId);
+            $paymentParam->setInvoiceNumber($incrementId);
+        }
+
         $this->setPayment($paymentParam);
+
+        if($this->_config->isSharedPageConnection()){
+            // add Verify options
+            $this->setVerifyCustomerEmail($this->_config->getVerifyEmail());
+            $this->setVerifyCustomerPhone($this->_config->getVerifyPhone());
+
+            // add Custom View
+            $this->setCustomView($this->_config->getCustomView());
+
+        }
 
         $response = $this->_doRapidAPI('AccessCodesShared');
         return $response;
@@ -130,6 +195,29 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount);
         $paymentParam->setCurrencyCode($this->_quote->getBaseCurrencyCode());
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($this->_quote->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItemId()) {
+                    $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $incrementId = $this->_getIncrementOrderId($this->_quote);
+            $paymentParam->setInvoiceReference($incrementId);
+        }
+
         $this->setPayment($paymentParam);
 
         $customerParam = $this->getCustomer();
@@ -224,9 +312,9 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         // add Billing Address
         $billingAddress = $this->_quote->getBillingAddress();
         $customerParam = Mage::getModel('ewayrapid/field_customer');
-        
+
         $title = $this->_fixTitle($billingAddress->getPrefix());
-        
+
         $customerParam->setTitle($title)
             ->setFirstName($billingAddress->getFirstname())
             ->setLastName($billingAddress->getLastname())
@@ -250,26 +338,30 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         $shippingAddress = $this->_quote->getShippingAddress();
 
         // copy BillingAddress to ShippingAddress if checkout with guest or register
+        /**
         $checkoutMethod = $this->_quote->getCheckoutMethod();
         if ($checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_GUEST
             || $checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER
         ) {
             $shippingAddress = $billingAddress;
         }
+        */
 
-        $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
-        $shippingParam->setFirstName($shippingAddress->getFirstname())
-            ->setLastName($shippingAddress->getLastname())
-            ->setStreet1($shippingAddress->getStreet1())
-            ->setStreet2($shippingAddress->getStreet2())
-            ->setCity($shippingAddress->getCity())
-            ->setState($shippingAddress->getRegion())
-            ->setPostalCode($shippingAddress->getPostcode())
-            ->setCountry(strtolower($shippingAddress->getCountryModel()->getIso2Code()))
-            ->setEmail($shippingAddress->getEmail())
-            ->setPhone($shippingAddress->getTelephone())
-            ->setFax($shippingAddress->getFax());
-        $this->setShippingAddress($shippingParam);
+        if (!empty($shippingAddress)) {
+            $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
+            $shippingParam->setFirstName($shippingAddress->getFirstname())
+                ->setLastName($shippingAddress->getLastname())
+                ->setStreet1($shippingAddress->getStreet1())
+                ->setStreet2($shippingAddress->getStreet2())
+                ->setCity($shippingAddress->getCity())
+                ->setState($shippingAddress->getRegion())
+                ->setPostalCode($shippingAddress->getPostcode())
+                ->setCountry(strtolower($shippingAddress->getCountryModel()->getIso2Code()))
+                ->setEmail($shippingAddress->getEmail())
+                ->setPhone($shippingAddress->getTelephone())
+                ->setFax($shippingAddress->getFax());
+            $this->setShippingAddress($shippingParam);
+        }
 
         return $this;
     }
@@ -526,8 +618,22 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
         }
         return false;
     }
+
     public function getMethod()
     {
         return Mage::getSingleton('core/session')->getData('ewayMethod');
+    }
+
+    public function getTransaction($transaction_number) {
+        try {
+            $results = $this->_doRapidAPI("Transaction/$transaction_number", 'GET');
+            if ($results->isSuccess()) {
+                return $results->getTransactions();
+            }
+        } catch (Exception $e) {
+            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
+                $results->getMessage()));
+            return false;
+        }
     }
 }

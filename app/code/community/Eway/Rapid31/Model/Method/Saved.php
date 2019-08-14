@@ -125,7 +125,7 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
 
         /* @var Mage_Sales_Model_Order_Payment $payment */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('paygate')->__('Invalid amount for capture.'));
+            Mage::throwException(Mage::helper('payment')->__('Invalid amount for capture.'));
         }
         $request = Mage::getModel('ewayrapid/request_token');
 
@@ -178,7 +178,7 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
 
         /* @var Mage_Sales_Model_Order_Payment $payment */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('paygate')->__('Invalid amount for authorize.'));
+            Mage::throwException(Mage::helper('payment')->__('Invalid amount for authorize.'));
         }
         $request = Mage::getModel('ewayrapid/request_token');
 

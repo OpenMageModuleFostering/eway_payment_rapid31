@@ -182,6 +182,28 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount)
             ->setCurrencyCode($order->getBaseCurrencyCode());
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($order->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItemId()) {
+                    $invoiceDescription .= (int) $item->getQtyOrdered() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $paymentParam->setInvoiceReference($order->getIncrementId());
+        }
+
         $this->setPayment($paymentParam);
 
         $customerParam = Mage::getModel('ewayrapid/field_customer');
@@ -189,7 +211,6 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
 
         /** get $customerTokenId if product is recurring profile  */
         if ($payment->getIsRecurring()) {
-            /** @todo save customer id and tokent id into payment when place order */
             $customer = Mage::getModel('customer/customer')->load($payment->getCustomerId());
             $customerHelper = Mage::helper('ewayrapid/customer');
             $customerHelper->setCurrentCustomer($customer);
@@ -216,19 +237,21 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction: Token info does not exist.'));
         }
 
-        $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
-        $shippingParam->setFirstName($shipping->getFirstname())
-            ->setLastName($shipping->getLastname())
-            ->setStreet1($shipping->getStreet1())
-            ->setStreet2($shipping->getStreet2())
-            ->setCity($shipping->getCity())
-            ->setState($shipping->getRegion())
-            ->setPostalCode($shipping->getPostcode())
-            ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
-            ->setEmail($shipping->getEmail())
-            ->setPhone($shipping->getTelephone())
-            ->setFax($shipping->getFax());
-        $this->setShippingAddress($shippingParam);
+        if (!empty($shipping)) {
+            $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
+            $shippingParam->setFirstName($shipping->getFirstname())
+                ->setLastName($shipping->getLastname())
+                ->setStreet1($shipping->getStreet1())
+                ->setStreet2($shipping->getStreet2())
+                ->setCity($shipping->getCity())
+                ->setState($shipping->getRegion())
+                ->setPostalCode($shipping->getPostcode())
+                ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
+                ->setEmail($shipping->getEmail())
+                ->setPhone($shipping->getTelephone())
+                ->setFax($shipping->getFax());
+            $this->setShippingAddress($shippingParam);
+        }
 
         if ((isset($methodInstance) && $methodInstance->getConfigData('transfer_cart_items')) || $payment->getIsRecurring() || !$payment->getIsInitialFee()) {
             $orderItems = $order->getAllVisibleItems();
@@ -455,7 +478,9 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
                 'Address' => Mage::getModel('ewayrapid/field_customer')->addData($address),
             );
             //edit card number if connection type = shared page
-            if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
+            if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+                || Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+            ) {
                 $tokenInfo['Card'] = str_replace('X', '*', $customer['CardNumber']);
                 $tokenInfo['Card'] = str_replace('x', '*', $tokenInfo['Card']);
             }
@@ -499,12 +524,6 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
 
         return 'Unknown';
     }
-
-    public function getTransaction($transaction_number) {
-
-    }
-
-
     /**
      * Check Card Name
      * @param $card Card Info

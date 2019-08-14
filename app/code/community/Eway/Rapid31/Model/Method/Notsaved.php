@@ -24,7 +24,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
     protected $_isInitializeNeeded          = false;
     protected $_canFetchTransactionInfo     = true;
     protected $_canReviewPayment            = false;
-    protected $_canCreateBillingAgreement   = true;
+    protected $_canCreateBillingAgreement   = false;
     protected $_canManageRecurringProfiles  = true;
     protected $_connectionType;
     protected $_isBackendOrder;
@@ -44,6 +44,25 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                 $this->_formBlockType = 'ewayrapid/form_sharedpage_notsaved';
             }
         }
+
+        if($this->_isBackendOrder){
+            if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+                || $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+        ) {
+                $this->_infoBlockType = 'ewayrapid/info_sharedpage_notsaved';
+                $this->_formBlockType = 'ewayrapid/form_sharedpage_notsaved';
+            }
+        }
+    }
+
+    /**
+     * As of version 1.4.0 this payment method isn't used.
+     *
+     * @param Mage_Sales_Model_Quote|null $quote
+     * @return boolean
+     */
+    public function isAvailable($quote = null) {
+        return false;
     }
 
     public function getConfigData($field, $storeId = null)
@@ -100,9 +119,9 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
 
             //Option choice
             if ($data->getMethod() == 'ewayrapid_saved' && !$data->getTransparentSaved()) {
-                Mage::throwException(Mage::helper('payment')->__('Please select an option payment for eWay saved'));
+                Mage::throwException(Mage::helper('payment')->__('Please select an option payment for saved'));
             } elseif ($data->getMethod() == 'ewayrapid_notsaved' && !$data->getTransparentNotsaved()) {
-                Mage::throwException(Mage::helper('payment')->__('Please select an option payment for eWay not saved'));
+                Mage::throwException(Mage::helper('payment')->__('Please select an option payment for not saved'));
             }
 
             //New Token
@@ -111,7 +130,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                 && $data->getSavedToken() == Eway_Rapid31_Model_Config::TOKEN_NEW
                 && Mage::helper('ewayrapid/customer')->checkTokenListByType(Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD)
             ) {
-                Mage::throwException(Mage::helper('payment')->__('You could only save one PayPal account, please select PayPal account existed to payent.'));
+                Mage::throwException(Mage::helper('payment')->__('You can only save one PayPal account, please select existing PayPal account.'));
             }
 
             if ($data->getTransparentNotsaved())
@@ -179,12 +198,20 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
         */
         parent::validate();
         if (!$this->_isBackendOrder) {
-            if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
+            if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE || $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME) {
                 return $this;
             } elseif ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT ) {
                 return $this;
             }
         }
+
+        if($this->_isBackendOrder
+            && $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+                || $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+        ){
+            return $this;
+        }
+
         $info = $this->getInfoInstance();
         $errorMsg = false;
         $availableTypes = explode(',',$this->getConfigData('cctypes'));
@@ -213,6 +240,8 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                     'VI'  => '/^4[0-9]{12}([0-9]{3})?$/',
                     // Master Card
                     'MC'  => '/^5[1-5][0-9]{14}$/',
+                    // Master Card 2017 - new MasterCard Range 2221-2720
+                    //'MC'  => '/(^5[1-5][0-9]{14}$)|(^2221[0-9]{12}$)|(^222[2-9][0-9]{12}$)|(^22[3-9][0-9]{13}$)|(^2[3-6][0-9]{14}$)|(^2720[0-9]{12}$)|(^27[0-1][0-9]{13}$)/',
                     // American Express
                     'AE'  => '/^3[47][0-9]{13}$/',
                     // JCB
@@ -359,9 +388,17 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
             }
         }
 
+        if ($this->_isBackendOrder) {
+            if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+                || $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+            ) {
+                return $this;
+            }
+        }
+
         /* @var Mage_Sales_Model_Order_Payment $payment */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('paygate')->__('Invalid amount for capture.'));
+            Mage::throwException(Mage::helper('payment')->__('Invalid amount for capture.'));
         }
 
         $amount = round($amount * 100);
@@ -398,9 +435,17 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
             }
         }
 
+        if ($this->_isBackendOrder) {
+            if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
+                || $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+            ) {
+                return $this;
+            }
+        }
+
         /* @var Mage_Sales_Model_Order_Payment $payment */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('paygate')->__('Invalid amount for authorize.'));
+            Mage::throwException(Mage::helper('payment')->__('Invalid amount for authorize.'));
         }
 
         if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type') === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
@@ -428,7 +473,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
     {
         /* @var Mage_Sales_Model_Order_Payment $payment */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('paygate')->__('Invalid amount for refund.'));
+            Mage::throwException(Mage::helper('payment')->__('Invalid amount for refund.'));
         }
 
         $amount = round($amount * 100);
@@ -470,6 +515,12 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
             === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
         ) {
             return Mage::getUrl('ewayrapid/sharedpage/start', array('_secure'=>true));
+        }
+        elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+            === Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME
+            && Mage::getSingleton('core/session')->getCheckoutExtension()
+        ){
+            return Mage::getUrl('ewayrapid/sharedpage/iframe', array('_secure'=>true));
         }
         elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
                 === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT

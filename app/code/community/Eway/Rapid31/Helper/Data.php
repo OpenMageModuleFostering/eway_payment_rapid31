@@ -4,8 +4,15 @@
  */ 
 class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 {
+    protected $_address	= null;
     private $_ccTypeNames = null;
     private $_isSaveMethodEnabled = null;
+    private $_beagleVerificationCodes = array(
+        0 => 'Not Verified',
+        1 => 'Attempted',
+        2 => 'Verified',
+        3 => 'Failed'
+    );
 
     public function isBackendOrder()
     {
@@ -49,7 +56,9 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
     public function isSavedMethodEnabled()
     {
         if(is_null($this->_isSaveMethodEnabled)) {
-            $this->_isSaveMethodEnabled = Mage::getSingleton('ewayrapid/method_saved')->getConfigData('active');
+            $savedEnable = Mage::getSingleton('ewayrapid/method_saved')->getConfigData('active');
+            $ewayOneEnable = Mage::getSingleton('ewayrapid/method_ewayone')->getConfigData('active');
+            $this->_isSaveMethodEnabled = $ewayOneEnable ? $ewayOneEnable : $savedEnable;
         }
         return $this->_isSaveMethodEnabled;
     }
@@ -97,7 +106,11 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $lineItems = array();
         /** @var Mage_Sales_Model_Quote $quote */
-        $quote = Mage::getSingleton('checkout/session')->getQuote();
+        if(!$this->isBackendOrder()){
+            $quote = Mage::getSingleton('checkout/session')->getQuote();
+        }else{
+            $quote = Mage::getSingleton('adminhtml/session_quote')->getQuote();
+        }
         if ($quote) {
             // add Shipping item
             if ($quote->getShippingAddress()->getBaseShippingInclTax()) {
@@ -152,5 +165,68 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
         Mage::getSingleton('core/session')->unsetData('editToken');
         Mage::getSingleton('core/session')->unsetData('newToken');
         Mage::getSingleton('core/session')->unsetData('sharedpagePaypal');
+    }
+
+    public function limitInvoiceDescriptionLength($description)
+    {
+        if(strlen($description) > 64){
+            $description = substr($description,0,61);
+            $description .= '...';
+        }
+
+        return $description;
+    }
+
+    public function getBeagleVerificationTitle($code)
+    {
+        return $this->_beagleVerificationCodes[$code];
+    }
+
+    /**
+     * Get Fraud Codes from ResponseMessage
+     *
+     * @return string
+     */
+    public function getFraudCodes($codes)
+    {
+        $codes = explode(',', $codes);
+
+        $fraudCodes = array();
+
+        foreach($codes as $code){
+            $code = trim($code);
+            if(substr($code,0,1) == "F"){
+                $fraudCodes[] = $code;
+            }
+        }
+
+        return implode(',', $fraudCodes);
+    }
+
+    /**
+     * Get the address block for dynamic state/country selection on forms.
+     */
+    public function getAddressBlock()
+    {
+        if( is_null( $this->_address ) ) {
+            $this->_address = Mage::app()->getLayout()->createBlock('directory/data');
+        }
+
+        return $this->_address;
+    }
+
+    /**
+     * Get customer country dropdown
+     */
+    public function getCountryHtmlSelect( $name, $default='US', $id=null )
+    {
+        return $this->getAddressBlock()->getCountryHtmlSelect( $default, $name, $id );
+    }
+
+    public function useIframeInBackend(){
+        $_config = Mage::getSingleton('ewayrapid/config');
+        $isBackend = $this->isBackendOrder();
+
+        return $isBackend && ($_config->isSharedPageConnection() || $_config->isRapidIframeConnection());
     }
 }

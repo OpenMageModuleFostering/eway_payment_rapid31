@@ -19,8 +19,7 @@
  * needs please refer to http://www.magentocommerce.com for more information.
  *
  * @category    design
- * @package     base_default
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @package     base_default
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -60,4 +59,15 @@
         </div>
     </li>
     <?php echo $this->getChildHtml() ?>
+    <?php if($this->hasVerification()): ?>
+        <li id="<?php echo $_code ?>_cc_type_cvv_div">
+            <label for="<?php echo $_code ?>_cc_cid" class="required"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
+            <div class="input-box">
+                <div class="v-fix">
+                    <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="input-text cvv required-entry validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" data-eway-encrypt-name="payment[cc_cid]" value="" pattern="\d*"/>
+                </div>
+                <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+            </div>
+        </li>
+    <?php endif; ?>
 </ul>

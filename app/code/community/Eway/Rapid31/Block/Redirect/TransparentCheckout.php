@@ -12,7 +12,6 @@ class Eway_Rapid31_Block_Redirect_TransparentCheckout extends Mage_Core_Block_Te
         if(!$this->transMethod) {
             $this->transMethod = Mage::getSingleton('core/session')->getTransparentSaved();
         }
-
         $this->setTemplate('ewayrapid/redirect/transparent_checkout.phtml')->toHtml();
     }
 
@@ -46,5 +45,11 @@ class Eway_Rapid31_Block_Redirect_TransparentCheckout extends Mage_Core_Block_Te
             $this->setData('cc_years', $years);
         }
         return $years;
+    }
+
+    public function getEnableVisaCheckout()
+    {
+        $_config = Mage::getSingleton('ewayrapid/config');
+        return $_config->getVisaCheckoutEnable();
     }
 }

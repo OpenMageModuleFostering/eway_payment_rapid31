@@ -5,6 +5,7 @@ class Eway_Rapid31_Model_Config
     const MODE_LIVE                     = 'live';
     const PAYMENT_NOT_SAVED_METHOD      = 'ewayrapid_notsaved';
     const PAYMENT_SAVED_METHOD          = 'ewayrapid_saved';
+    const PAYMENT_EWAYONE_METHOD        = 'ewayrapid_ewayone';
 
     const METHOD_PROCESS_PAYMENT        = 'ProcessPayment';
     const METHOD_CREATE_TOKEN           = 'CreateTokenCustomer';
@@ -19,11 +20,13 @@ class Eway_Rapid31_Model_Config
     const CONNECTION_DIRECT             = 'direct';
     const CONNECTION_TRANSPARENT        = 'transparent';
     const CONNECTION_SHARED_PAGE        = 'sharedpage';
+    const CONNECTION_RAPID_IFRAME       = 'rapidiframe';
 
     const CREDITCARD_METHOD             = 'creditcard';
     const PAYPAL_STANDARD_METHOD        = 'paypal';
     const PAYPAL_EXPRESS_METHOD         = 'paypal_express';
     const MASTERPASS_METHOD             = 'masterpass';
+    const VISA_CHECKOUT_METHOD          = 'visa';
 
     const MESSAGE_ERROR_ORDER           = 'Billing Frequency is wrong. It must be numeric and greater than 0. Status of recurring profile is changed to cancelled';
 
@@ -116,6 +119,16 @@ class Eway_Rapid31_Model_Config
         return Mage::getStoreConfig('payment/ewayrapid_general/connection_type') == self::CONNECTION_TRANSPARENT;
     }
 
+    public function isSharedPageConnection()
+    {
+        return Mage::getStoreConfig('payment/ewayrapid_general/connection_type') == self::CONNECTION_SHARED_PAGE;
+    }
+
+    public function isRapidIframeConnection()
+    {
+        return Mage::getStoreConfig('payment/ewayrapid_general/connection_type') == self::CONNECTION_RAPID_IFRAME;
+    }
+
     public function canEditToken()
     {
         return (bool) Mage::getStoreConfig('payment/ewayrapid_general/can_edit_token');
@@ -124,5 +137,49 @@ class Eway_Rapid31_Model_Config
     public function getSupportedCardTypes()
     {
         return explode(',', Mage::getStoreConfig('payment/ewayrapid_general/cctypes'));
+    }
+
+    public function getVerifyEmail()
+    {
+        return (bool) Mage::getStoreConfig('payment/ewayrapid_general/beagle_verify_email');
+    }
+
+    public function getVerifyPhone()
+    {
+        return (bool) Mage::getStoreConfig('payment/ewayrapid_general/beagle_verify_phone');
+    }
+
+    public function getCustomView()
+    {
+        return Mage::getStoreConfig('payment/ewayrapid_general/custom_view');
+    }
+
+    public function shouldPassingInvoiceDescription()
+    {
+        return Mage::getStoreConfig('payment/ewayrapid_general/invoice_description');
+    }
+
+    public function shouldPassingGuessOrder()
+    {
+        return Mage::getStoreConfig('payment/ewayrapid_general/guess_order');
+    }
+
+    public function getVisaCheckoutApiKey(){
+        return Mage::helper('core')->decrypt(Mage::getStoreConfig('payment/ewayrapid_general/visa_checkout_api_key'));
+    }
+
+    public function getVisaCheckoutEnable(){
+        return Mage::getStoreConfig('payment/ewayrapid_general/enable_visa_checkout')
+        && Mage::getStoreConfig('payment/ewayrapid_general/visa_checkout_api_key') != '';
+    }
+
+    public function getVisaCheckoutSDK(){
+        if(!$this->getVisaCheckoutEnable()){
+            return false;
+        }else{
+            return $this->_isSandbox
+                ? 'https://sandbox-assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js'
+                : 'https://assets.secure.checkout.visa.com/checkout-widget/resources/js/integration/v1/sdk.js';
+        }
     }
 }

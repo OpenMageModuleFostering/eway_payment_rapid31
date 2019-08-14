@@ -18,6 +18,9 @@ class Eway_Rapid31_Model_System_Config_Source_ConnectionType
             array(
                 'value' => Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE,
                 'label'=>Mage::helper('ewayrapid')->__('Responsive shared page')),
+            array(
+                'value' => Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME,
+                'label'=>Mage::helper('ewayrapid')->__('Rapid IFrame')),
         );
     }
 }

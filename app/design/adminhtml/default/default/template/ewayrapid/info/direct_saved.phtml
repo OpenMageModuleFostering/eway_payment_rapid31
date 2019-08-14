@@ -20,7 +20,6 @@
  *
  * @category    design
  * @package     default_default
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -29,7 +28,6 @@ $_helper = Mage::helper('ewayrapid');
 /* @var Eway_Rapid31_Block_Info_Direct_Notsaved $this */
 $_info = $this->getInfo();
 /* @var Mage_Sales_Model_Order_Payment $_info */
-
 ?>
 <div class="cards-list">
 
@@ -59,6 +57,33 @@ $_info = $this->getInfo();
             <td><?php echo $_info->getLastTransId(); ?></td>
         </tr>
         <?php endif; ?>
+
+        <?php if($_info['beagle_score'] > 0): ?>
+        <tr>
+            <td><?php echo $_helper->__('Beagle Score') ?>:</td>
+            <td><?php echo $_info['beagle_score']; ?></td>
+        </tr>
+        <?php endif; ?>
+
+        <?php if (isset($_info['beagle_verification'])):
+            $_verifications = array_filter(unserialize($_info['beagle_verification']) );
+        endif; ?>
+        <?php if(isset($_verifications) && !empty($_verifications)): ?>
+        <tr>
+            <td><?php echo $_helper->__('Beagle Verification') ?>:</td>
+            <td>
+                <?php $count = 0; ?>
+                <?php foreach($_verifications as $key => $_verificationCode): ?>
+                    <?php
+                    $_verificationTitle = Mage::helper('ewayrapid')->getBeagleVerificationTitle($_verificationCode);
+                    ?>
+                    <span><?php echo $count ? ',' :  '' ?><?php echo $key . ' : ' . $_verificationTitle ?></span>
+                    <?php $count++ ?>
+                <?php endforeach; ?>
+            </td>
+        </tr>
+        <?php endif; ?>
+
         </tbody>
     </table>
 </div>

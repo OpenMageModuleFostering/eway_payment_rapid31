@@ -66,7 +66,7 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
         $this->_log('>>>>> START REQUEST ' . $mode . ' (' . $method . ') ' . ' : ' . $url);
 
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type: application/json"));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "X-EWAY-APIVERSION: 40"));
         curl_setopt($ch, CURLOPT_USERPWD, $this->_config->getBasicAuthenticationHeader());
         switch($method) {
             case 'POST':
@@ -152,5 +152,29 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
             return 'Mr.';
         }
         return $title;
+    }
+
+    /**
+     * Get predicted increment order id
+     * @return string
+     */
+    protected function _getIncrementOrderId($quote)
+    {
+        $orderConfig = Mage::getSingleton('eav/config')->getEntityType('order');
+
+        $entityStoreConfig = Mage::getModel('eav/entity_store')
+            ->loadByEntityStore($orderConfig->getId(), $quote->getStoreId());
+
+        $incrementInstance = Mage::getModel($orderConfig->getIncrementModel())
+            ->setPrefix($entityStoreConfig->getIncrementPrefix())
+            ->setPadLength($orderConfig->getIncrementPadLength())
+            ->setPadChar($orderConfig->getIncrementPadChar())
+            ->setLastId($entityStoreConfig->getIncrementLastId())
+            ->setEntityTypeId($entityStoreConfig->getEntityTypeId())
+            ->setStoreId($entityStoreConfig->getStoreId());
+
+        $incrementId = $incrementInstance->getNextId();
+
+        return $incrementId;
     }
 }

@@ -92,7 +92,7 @@ class Eway_Rapid31_Model_EwayCron {
         // Get new TxnId
         $break = true;
         for($i = 0; $i < 100; $i++) {
-            $transId += 1;
+            $transId ++;
             $newTrans = Mage::getModel('sales/order_payment_transaction')
                 ->getCollection()
                 ->addFieldToFilter('txn_id', array('eq' => $transId));

@@ -37,6 +37,14 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
      */
     protected function _getCurrentCustomer()
     {
+        if(Mage::helper('ewayrapid')->isBackendOrder()){
+            if(Mage::registry('current_customer')){
+                return Mage::registry('current_customer');
+            }elseif($this->_getRequest()->getParam('customer_id')){
+                return Mage::getModel('customer/customer')->load($this->_getRequest()->getParam('customer_id'));
+            }
+        }
+
         if(Mage::helper('ewayrapid')->isBackendOrder() && Mage::getSingleton('adminhtml/session_quote')->getCustomer()) {
             return Mage::getSingleton('adminhtml/session_quote')->getCustomer();
         }

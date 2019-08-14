@@ -14,9 +14,25 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $this->setMethod(Eway_Rapid31_Model_Config::METHOD_PROCESS_PAYMENT);
         $response = $this->_doRapidAPI('Transaction');
 
+        // Save fraud information
+
+        $transaction = $this->getTransaction($response['TransactionID']);
+        if($transaction) {
+            $fraudAction = $transaction[0]['FraudAction'];
+            $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
+            $captured = $transaction[0]['TransactionCaptured'];
+            unset($transaction);
+        }
+
         if($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             $payment->setCcLast4($response->getCcLast4());
+            $beagleScore = $response->getBeagleScore() && $response->getData('BeagleScore') > 0 ? $response->getBeagleScore() : '';
+            $payment->setBeagleScore($beagleScore);
+            $payment->setBeagleVerification(serialize($response->getBeagleVerification()));
+            $payment->setFraudAction($fraudAction);
+            $payment->setFraudCodes($fraudCodes);
+            $payment->setTransactionCaptured($captured);
             return $this;
         } else {
             Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction. Please try again. (Error message: %s)',
@@ -37,10 +53,26 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $this->setMethod(Eway_Rapid31_Model_Config::METHOD_AUTHORISE);
         $response = $this->_doRapidAPI('Authorisation');
 
+        // Save fraud information
+
+        $transaction = $this->getTransaction($response['TransactionID']);
+        if($transaction) {
+            $fraudAction = $transaction[0]['FraudAction'];
+            $fraudCodes = Mage::helper('ewayrapid')->getFraudCodes($transaction[0]['ResponseMessage']);
+            $captured = $transaction[0]['TransactionCaptured'];
+            unset($transaction);
+        }
+
         if($response->isSuccess()) {
             $payment->setTransactionId($response->getTransactionID());
             $payment->setIsTransactionClosed(0);
+            $beagleScore = $response->getBeagleScore() && $response->getData('BeagleScore') > 0 ? $response->getBeagleScore() : '';
+            $payment->setBeagleScore($beagleScore);
+            $payment->setBeagleVerification(serialize($response->getBeagleVerification()));
             $payment->setCcLast4($response->getCcLast4());
+            $payment->setFraudAction($fraudAction);
+            $payment->setFraudCodes($fraudCodes);
+            $payment->setTransactionCaptured($captured);
             return $this;
         } else {
             if ($payment->getIsRecurring()) {
@@ -203,6 +235,28 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount)
             ->setCurrencyCode($order->getBaseCurrencyCode());
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($order->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItemId()) {
+                    $invoiceDescription .= (int) $item->getQtyOrdered() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $paymentParam->setInvoiceReference($order->getIncrementId());
+        }
+
         $this->setPayment($paymentParam);
         
         $title = $this->_fixTitle($billing->getPrefix());
@@ -235,19 +289,21 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $customerParam->setCardDetails($cardDetails);
         $this->setCustomer($customerParam);
 
-        $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
-        $shippingParam->setFirstName($shipping->getFirstname())
-            ->setLastName($shipping->getLastname())
-            ->setStreet1($shipping->getStreet1())
-            ->setStreet2($shipping->getStreet2())
-            ->setCity($shipping->getCity())
-            ->setState($shipping->getRegion())
-            ->setPostalCode($shipping->getPostcode())
-            ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
-            ->setEmail($shipping->getEmail())
-            ->setPhone($shipping->getTelephone())
-            ->setFax($shipping->getFax());
-        $this->setShippingAddress($shippingParam);
+        if (!empty($shipping)) {
+            $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
+            $shippingParam->setFirstName($shipping->getFirstname())
+                ->setLastName($shipping->getLastname())
+                ->setStreet1($shipping->getStreet1())
+                ->setStreet2($shipping->getStreet2())
+                ->setCity($shipping->getCity())
+                ->setState($shipping->getRegion())
+                ->setPostalCode($shipping->getPostcode())
+                ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
+                ->setEmail($shipping->getEmail())
+                ->setPhone($shipping->getTelephone())
+                ->setFax($shipping->getFax());
+            $this->setShippingAddress($shippingParam);
+        }
 
         if($methodInstance->getConfigData('transfer_cart_items')) {
             $orderItems = $order->getAllVisibleItems();
@@ -267,5 +323,18 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         }
 
         return $this;
+    }
+
+    public function getTransaction($transaction_number) {
+        try {
+            $results = $this->_doRapidAPI("Transaction/$transaction_number", 'GET');
+            if ($results->isSuccess()) {
+                return $results->getTransactions();
+            }
+        } catch (Exception $e) {
+            Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later. (Error message: %s)',
+                $results->getMessage()));
+            return false;
+        }
     }
 }

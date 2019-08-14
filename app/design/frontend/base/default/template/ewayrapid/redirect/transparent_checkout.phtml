@@ -19,6 +19,11 @@ $accessCode = $this->getAccessCode();
                    class="" id="EWAY_CARDCVN" name="EWAY_CARDCVN" value="<?php echo Mage::getSingleton('core/session')->getInfoCard()->getCid(); ?>"
                 />
         <?php endif; ?>
+    <?php } elseif($this->transMethod == Eway_Rapid31_Model_Config::VISA_CHECKOUT_METHOD) {?>
+        <input type="hidden" name="EWAY_PAYMENTTYPE" value="visacheckout"/>
+        <input type="hidden" id="visa_checkout_callid" name="VISA_CHECKOUT_CALLID"
+               value="<?php echo Mage::getSingleton('core/session')->getVisaCheckoutCallId() ?>"/>
+        <input type="hidden" id="visa_checkout_response" name="VISA_CHECKOUT_RESPONSE" value=""/>
     <?php } ?>
 
     <?php if ($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD) { ?>

@@ -249,7 +249,9 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         'F9033' => 'Invalid Billing Street',
         'F9034' => 'Invalid Shipping Street',
         'F9037' => 'Suspicious Customer Email Address',
+        'F9049' => 'Genuine Customer',
         'F9050' => 'High Risk Email Address and amount',
+        'F9113' => 'Card issuing country differs from IP address country'
     );
 
     public function getMessage() {
@@ -328,11 +330,26 @@ class Eway_Rapid31_Model_Response extends Varien_Object
         } else {
             // Otherwise base on the Errors (Token transactions)
             $this->isSuccess(!$this->getErrors());
+
+            // Catch empty response
+            if(!isset($json['TransactionStatus'])
+                    && !isset($json['TransactionID'])
+                    && !isset($json['Customer']['TokenCustomerID'])
+                    && !isset($json['AccessCode'])
+                    && !isset($json['Transactions'])) {
+                $this->isSuccess(false);
+            }
         }
 
         return $this;
     }
 
+    /**
+     * Sets a value in the object if present
+     *
+     * @param array $json
+     * @param string $key
+     */
     private function _setIfNotEmpty($json, $key)
     {
         if(!empty($json[$key])) {
@@ -353,6 +370,7 @@ class Eway_Rapid31_Model_Response extends Varien_Object
 
     /**
      * replace error code to message
+     *
      * @param $message
      */
     public function replaceMessage($message)
@@ -371,6 +389,39 @@ class Eway_Rapid31_Model_Response extends Varien_Object
             return $results;
         } else {
             return Mage::helper('ewayrapid')->__('Transaction failed.');
+        }
+    }
+
+    /**
+     * Checks if the transaction was marked as challenged by Beagle anti-fraud
+     *
+     * @param array $result transaction result from eWAY
+     */
+    private function _checkfraud($result)
+    {
+        if (isset($result['FraudAction']) && !empty($result['FraudAction'])) {
+
+            // Challenged orders are Review or PreAuth/Allow that processed
+            if (($result['FraudAction'] == "Review") ||
+                    ($result['FraudAction'] == "PreAuth" && $this->isSuccess()) ||
+                    ($result['FraudAction'] == "Allow" && $this->isSuccess())) {
+
+                // Find fraud codes
+                $codeMessage = str_replace(' ', '', $result['ResponseMessage']);
+                $codeMessages = explode(',', $codeMessage);
+                $result = preg_grep("/^F.*/", $codeMessages);
+                $codes = array_flip($result);
+
+                // Convert to text and signal fraud
+                $resultMatched = array_intersect_key($this->_messageCode, $codes);
+                $resultDefault = array_fill_keys(array_keys($codes), "Unknown fraud rule");
+                $resultMessages = array_merge($resultDefault,$resultMatched);
+                Mage::getSingleton('core/session')->setData('fraud', 1);
+                $fraudMessage = implode(', ', $resultMessages);
+                Mage::getSingleton('core/session')->setData('fraudMessage', $fraudMessage);
+
+            }
+
         }
     }
 }

@@ -65,7 +65,7 @@ class Eway_Rapid31_Model_RecurringProfile
     protected function _checkRecurringProfile()
     {
         $methodCode = $this->_recurringProfile->getMethodCode();
-        if ($methodCode != 'ewayrapid_saved') {
+        if ($methodCode != 'ewayrapid_saved' && $methodCode != 'ewayrapid_ewayone') {
             throw new Exception(sprintf('Method "%s" is not eWAY Rapid (Saved).', $methodCode));
         }
         if (!Mage::helper('ewayrapid')->isSavedMethodEnabled()) {
@@ -459,6 +459,9 @@ class Eway_Rapid31_Model_RecurringProfile
     }
 
     /**
+     * If next date on profile is less than today, set next date to today
+     * (fixes missed days)
+     * 
      * @param Mage_Sales_Model_Recurring_Profile $profile
      */
     public function updateNextDate(Mage_Sales_Model_Recurring_Profile $profile)
@@ -471,7 +474,7 @@ class Eway_Rapid31_Model_RecurringProfile
         $currentDate = new DateTime(date("Y-m-d", Mage::getModel('core/date')->timestamp(time())), new DateTimeZone($timezone));
         if ($nextDate < $currentDate) {
             $this->_recurringProfile = $profile;
-            $startDate = $nextDate->format('Y-m-d');
+            $startDate = $currentDate->format('Y-m-d');
             $this->nextDate($startDate);
         }
     }

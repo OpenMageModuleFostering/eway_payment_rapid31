@@ -36,7 +36,10 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
             ->setFax($billingAddress->getFax())
             ->setUrl('');
 
-        if ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD) {
+        if ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_SAVED_METHOD
+            || ($this->getMethod() == Eway_Rapid31_Model_Config::PAYMENT_EWAYONE_METHOD
+                && Mage::getSingleton('core/session')->getSavedToken())
+        ) {
             $customerTokenId = Mage::getSingleton('core/session')->getSavedToken();
             if (!$customerTokenId) {
                 Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while updating token: Token info does not exist.'));
@@ -56,32 +59,59 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $shippingAddress = $quote->getShippingAddress();
 
         // copy BillingAddress to ShippingAddress if checkout with guest or register
+        /**
         $checkoutMethod = $quote->getCheckoutMethod();
         if ($checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_GUEST
             || $checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER
         ) {
             $shippingAddress = $billingAddress;
         }
+        */
 
-        $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
-        $shippingParam->setFirstName($shippingAddress->getFirstname())
-            ->setLastName($shippingAddress->getLastname())
-            ->setStreet1($shippingAddress->getStreet1())
-            ->setStreet2($shippingAddress->getStreet2())
-            ->setCity($shippingAddress->getCity())
-            ->setState($shippingAddress->getRegion())
-            ->setPostalCode($shippingAddress->getPostcode())
-            ->setCountry(strtolower($shippingAddress->getCountryModel()->getIso2Code()))
-            ->setEmail($shippingAddress->getEmail())
-            ->setPhone($shippingAddress->getTelephone())
-            ->setFax($shippingAddress->getFax());
-        $this->setShippingAddress($shippingParam);
+        if (!empty($shippingAddress)) {
+            $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
+            $shippingParam->setFirstName($shippingAddress->getFirstname())
+                ->setLastName($shippingAddress->getLastname())
+                ->setStreet1($shippingAddress->getStreet1())
+                ->setStreet2($shippingAddress->getStreet2())
+                ->setCity($shippingAddress->getCity())
+                ->setState($shippingAddress->getRegion())
+                ->setPostalCode($shippingAddress->getPostcode())
+                ->setCountry(strtolower($shippingAddress->getCountryModel()->getIso2Code()))
+                ->setEmail($shippingAddress->getEmail())
+                ->setPhone($shippingAddress->getTelephone())
+                ->setFax($shippingAddress->getFax());
+            $this->setShippingAddress($shippingParam);
+        }
 
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount(round($quote->getBaseGrandTotal() * 100));
         if ($method == 'CreateTokenCustomer' || $method == 'UpdateTokenCustomer') {
             $paymentParam->setTotalAmount(0);
         }
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($quote->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItemId()) {
+                    $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $incrementId = $this->_getIncrementOrderId($quote);
+            $paymentParam->setInvoiceReference($incrementId);
+        }
+
         $paymentParam->setCurrencyCode($quote->getBaseCurrencyCode());
         $this->setPayment($paymentParam);
 
@@ -256,9 +286,9 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
             }
 
             $billingAddress = $quote->getBillingAddress();
-            
+
             $title = $this->_fixTitle($billingAddress->getPrefix());
-            
+
             $customerParam = Mage::getModel('ewayrapid/field_customer');
             $customerParam->setTitle($title)
                 ->setFirstName($billingAddress->getFirstname())
@@ -463,6 +493,9 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
             $quote->setTransactionId($response->getTransactionID());
             $quote->setIsTransactionClosed(0);
             $quote->setCcLast4($response->getCcLast4());
+            $beagleScore = $response->getBeagleScore() ? $response->getBeagleScore() : '';
+            $quote->setBeagleScore($beagleScore);
+            $quote->setBeagleVerification($response->getBeagleVerification());
             $quote->save();
             return $quote;
         } else {
@@ -538,6 +571,29 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $paymentParam = Mage::getModel('ewayrapid/field_payment');
         $paymentParam->setTotalAmount($amount);
         $paymentParam->setCurrencyCode($quote->getBaseCurrencyCode());
+
+        // add InvoiceDescription and InvoiceReference
+        $config = Mage::getModel('ewayrapid/config');
+
+        if($config->shouldPassingInvoiceDescription()){
+            $invoiceDescription = '';
+            foreach($quote->getAllVisibleItems() as $item){
+                // Check in case multi-shipping
+                if (!$item->getQuoteParentItemId()) {
+                    $invoiceDescription .= (int) $item->getQty() . ' x ' .$item->getName() . ', ';
+                }
+            }
+            $invoiceDescription = trim($invoiceDescription,', ');
+            $invoiceDescription = Mage::helper('ewayrapid')->limitInvoiceDescriptionLength($invoiceDescription);
+
+            $paymentParam->setInvoiceDescription($invoiceDescription);
+        }
+
+        if($config->shouldPassingGuessOrder()){
+            $incrementId = $this->_getIncrementOrderId($quote);
+            $paymentParam->setInvoiceReference($incrementId);
+        }
+
         $this->setPayment($paymentParam);
         
         $title = $this->_fixTitle($billing->getPrefix());
@@ -580,19 +636,21 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
 
         $this->setCustomer($customerParam);
 
-        $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
-        $shippingParam->setFirstName($shipping->getFirstname())
-            ->setLastName($shipping->getLastname())
-            ->setStreet1($shipping->getStreet1())
-            ->setStreet2($shipping->getStreet2())
-            ->setCity($shipping->getCity())
-            ->setState($shipping->getRegion())
-            ->setPostalCode($shipping->getPostcode())
-            ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
-            ->setEmail($shipping->getEmail())
-            ->setPhone($shipping->getTelephone())
-            ->setFax($shipping->getFax());
-        $this->setShippingAddress($shippingParam);
+        if (!empty($shipping)) {
+            $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
+            $shippingParam->setFirstName($shipping->getFirstname())
+                ->setLastName($shipping->getLastname())
+                ->setStreet1($shipping->getStreet1())
+                ->setStreet2($shipping->getStreet2())
+                ->setCity($shipping->getCity())
+                ->setState($shipping->getRegion())
+                ->setPostalCode($shipping->getPostcode())
+                ->setCountry(strtolower($shipping->getCountryModel()->getIso2Code()))
+                ->setEmail($shipping->getEmail())
+                ->setPhone($shipping->getTelephone())
+                ->setFax($shipping->getFax());
+            $this->setShippingAddress($shippingParam);
+        }
 
         $orderItems = $quote->getAllVisibleItems();
         $lineItems = array();

@@ -6,15 +6,23 @@ $_address = $this->getCustomerAddress();
 $connectionType = Mage::getStoreConfig('payment/ewayrapid_general/connection_type');
 $formUrl = $this->getSaveUrl();
 $transparent = false;
+$iframe = false;
+$submitFunction = '';
 switch ($connectionType) {
     case Eway_Rapid31_Model_Config::CONNECTION_DIRECT:
-        echo '<script type="text/javascript" src="' . str_replace('index.php', '', Mage::getBaseUrl()) . 'js/ewayrapid/eCrypt.js"></script>';
+        echo '<script type="text/javascript" src="https://secure.ewaypayments.com/scripts/eCrypt.js"></script>';
         break;
     case Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT:
         $transparent = true;
+        $submitFunction = 'beforeSubmit';
         break;
     case Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE:
         $formUrl = Mage::getBaseUrl() . '/ewayrapid/mycards/getAccessCode';
+        break;
+    case Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME:
+        $formUrl = Mage::getBaseUrl() . '/ewayrapid/mycards/getAccessCode';
+        $iframe = true;
+        $submitFunction = 'beforeSubmitIframe';
         break;
     default:
         break;
@@ -45,7 +53,7 @@ if ($_token->getTokenId()) {
 
 <!-- Card info -->
 <?php
-if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
+if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE && $connectionType !== Eway_Rapid31_Model_Config::CONNECTION_RAPID_IFRAME) {
     ?>
     <div class="fieldset">
         <?php echo $this->getBlockHtml('formkey') ?>
@@ -429,12 +437,12 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
     <p class="back-link"><a href="<?php echo $this->escapeUrl($this->getBackUrl()) ?>">
             <small>&laquo; </small><?php echo $this->__('Back') ?></a></p>
     <?php
-    echo $transparent ? '<button type="button" onclick="beforeSubmit(this)" title="'
+    echo $transparent || $iframe ? '<button type="button" onclick="'.$submitFunction.'(this)" title="'
         . $this->__('Save Credit Card') . '" class="button"><span><span>'
         . $this->__('Save Credit Card') . '</span></span></button>'
         . '<span id="save-please-wait" class="please-wait" style="display:none;">
             <img class="v-middle" title="Loading..." alt="Loading..." src="'
-        . Mage::getBaseUrl() . '/skin/frontend/default/default/images/opc-ajax-loader.gif">
+        . Mage::getBaseUrl() . '/skin/frontend/rwd/default/images/opc-ajax-loader.gif">
                 Please waiting ...
             </span>'
         : '<button type="submit" title="' . $this->__('Save Credit Card') . '" class="button"><span><span>' . $this->__('Save Credit Card') . '</span></span></button>';
@@ -589,6 +597,89 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
 
                                 $('eway_accesscode').setValue(data.AccessCode);
                                 $('form-validate').submit();
+                                return;
+                            }
+                            else {
+                                // Alert error code ERR-012
+                                alert('An error occurred while connecting to payment gateway. Please try again later.!');
+                            }
+                        } else {
+                            alert(transport.responseText)
+                        }
+
+                        // Remove style waiting
+                        $(obj).setStyle({'display': 'block'});
+                        $('save-please-wait').setStyle({'display': 'none'});
+                    }
+                },
+                onFailure: function () {
+                    alert('Something went wrong...')
+                }
+            });
+        return false;
+    }
+
+    // Iframe
+
+    ewayReturnUrl = '';
+
+    function eWayRapidCallback (result, transactionID, errors) {
+        if (result == "Complete") {
+            setLocation(ewayReturnUrl);
+        } else if (result == "Error") {
+            alert("There was a problem  while connecting to payment gateway: " + errors);
+            dataForm.form.down('button').setStyle({'display': 'block'});
+            $('save-please-wait').setStyle({'display': 'none'});
+        } else{
+            dataForm.form.down('button').setStyle({'display': 'block'});
+            $('save-please-wait').setStyle({'display': 'none'});
+        }
+    }
+
+    function beforeSubmitIframe(obj) {
+        $('validate_from_date_message') != null ? $('validate_from_date_message').remove() : '';
+
+        if (typeof isTest !== 'undefined') {
+            // Alert error code ERR-012
+            alert('An error occurred while connecting to payment gateway. Please try again later.!');
+            return false;
+        }
+
+        var validate = dataForm.validator.validate();
+        if (!validate) {
+            return;
+        }
+
+        // Waiting
+        $(obj).setStyle({'display': 'none'});
+        $('save-please-wait').setStyle({'display': 'block'});
+
+        // Get access code
+        new Ajax.Request('<?php echo Mage::getBaseUrl() ?>/ewayrapid/mycards/getAccessCode',
+            {
+                method: 'post',
+                parameters: $('form-validate').serialize(true),
+                onSuccess: function (transport) {
+                    if (transport.responseText) {
+                        var data = JSON.parse(transport.responseText);
+                        if (typeof data == 'object') {
+
+                            // Check login require
+                            if (data.login != undefined) {
+                                alert('Session has expired');
+                                window.location = window.location.href;
+                            }
+
+                            if (typeof data.SharedPaymentUrl != 'undefined' & data.SharedPaymentUrl != null) {
+
+                                var eWAYConfig = {
+                                    sharedPaymentUrl: data.SharedPaymentUrl
+                                };
+
+                                ewayReturnUrl = data.ReturnUrl;
+
+                                eCrypt.showModalPayment(eWAYConfig, eWayRapidCallback);
+
                                 return;
                             }
                             else {

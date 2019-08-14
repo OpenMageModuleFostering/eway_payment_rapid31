@@ -1,8 +1,13 @@
 <?php
 /**
- * 
+ *
  */
 class Eway_Rapid31_Adminhtml_EwayadminController extends Mage_Adminhtml_Controller_Action {
+
+    protected function _isAllowed() {
+        return true;
+    }
+
     public function indexAction() {
     }
 
@@ -63,7 +68,7 @@ class Eway_Rapid31_Adminhtml_EwayadminController extends Mage_Adminhtml_Controll
                 // Check return data
                 $result_decode = json_decode($result);
 
-                $trans = $result_decode->Transactions;
+                $trans = (isset($result_decode->Transactions) ? $result_decode->Transactions : array());
                 if(!isset($trans[0])) {
                     continue; // go to next cycle when no element is exist
                 }
@@ -80,7 +85,7 @@ class Eway_Rapid31_Adminhtml_EwayadminController extends Mage_Adminhtml_Controll
             }
         }
         // Redirect form
-        $this->_redirectUrl(Mage::helper("adminhtml")->getUrl("adminhtml/sales_order/index"));
+        $this->_redirectReferer();
     }
     private function __getTransaction($transId) {
         $ewayConfig = Mage::getSingleton('ewayrapid/config');
@@ -168,6 +173,18 @@ class Eway_Rapid31_Adminhtml_EwayadminController extends Mage_Adminhtml_Controll
             $customer->setMarkFraud(0);
             $customer->save();
         }
+    }
+
+    public function ewayordersAction()
+    {
+        $this->loadLayout();
+        $this->renderLayout();
+    }
+
+    public function gridAction()
+    {
+        $this->loadLayout(false);
+        $this->renderLayout();
     }
 
 }
