@@ -15,7 +15,7 @@ class Eway_Rapid31_Block_Info_Transparent_Saved extends Mage_Payment_Block_Info
      */
     public function toPdf()
     {
-        $this->setTemplate('ewayrapid/pdf/transparent_notsaved.phtml');
+        $this->setTemplate('ewayrapid/pdf/direct_notsaved.phtml');
         return $this->toHtml();
     }
 

@@ -40,7 +40,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
 
         try {
             $this->_initCheckout();
-            $data = $this->_checkout->createAccessCode(Mage::getUrl('*/*/return'), Mage::getUrl('*/*/cancel'));
+            $data = $this->_checkout->createAccessCode(Mage::getUrl('*/*/return', array('_secure'=>true)), Mage::getUrl('*/*/cancel', array('_secure'=>true)));
             if ($data->isSuccess()) {
                 Mage::getSingleton('core/session')->setData('FormActionURL', $data->getFormActionURL());
                 if ($data->getSharedPaymentUrl()) {
@@ -82,7 +82,7 @@ class Eway_Rapid31_SharedpageController extends Mage_Checkout_OnepageController
                     $response = $this->_checkout->saveTokenById($response, $editToken);
                     $response = $this->_processPayment($response);
                 } else {
-                    Mage::throwException(Mage::helper('ewayrapid')->__('Sorry, your payment could not be processed (Message: %s). Please check your details and try again, or try an alternative payment method.',
+                    Mage::throwException(Mage::helper('ewayrapid')->__('An error occurred while making the transaction. Please try again. (Error message: %s)',
                         $response->getMessage()));
                 }
             }

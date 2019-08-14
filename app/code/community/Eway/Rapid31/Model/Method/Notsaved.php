@@ -88,6 +88,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
         $info = $this->getInfoInstance();
 
         if (!$this->_isBackendOrder && $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
+            Mage::helper('ewayrapid')->clearSessionSharedpage();
             //Mage::getSingleton('core/session')->setData('sharedpagePaypal', $data->getSharedpageNotsaved());
             Mage::getSingleton('core/session')->setData('sharedpagePaypal', 'paypal');
         } elseif (!$this->_isBackendOrder && $this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT) {
@@ -141,7 +142,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                     ->setCid($data->getCcCid())
                     ->setExpMonth($data->getCcExpMonth())
                     ->setExpYear($data->getCcExpYear()
-                    ));
+            ));
 
         } else {
             $info->setCcType($data->getCcType())
@@ -224,7 +225,7 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
                 }
 
                 if ($ccType!=$info->getCcType()) {
-                    $errorMsg = Mage::helper('payment')->__('Credit card number mismatch with credit card type.');
+                    $errorMsg = Mage::helper('payment')->__('Please enter a valid credit card number.');
                 }
             } else {
                 $errorMsg = Mage::helper('payment')->__('Invalid Credit Card Number');
@@ -464,7 +465,17 @@ class Eway_Rapid31_Model_Method_Notsaved extends Mage_Payment_Model_Method_Abstr
         if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
             === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
         ) {
-            return Mage::getUrl('ewayrapid/sharedpage/start');
+            return Mage::getUrl('ewayrapid/sharedpage/start', array('_secure'=>true));
+        }
+        elseif (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+                === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
+                && (Mage::getStoreConfig('onestepcheckout/general/active')
+                || Mage::getStoreConfig('opc/global/status')
+                || Mage::getStoreConfig('firecheckout/general/enabled')
+                || Mage::getStoreConfig('gomage_checkout/general/enabled')
+                || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+        ) {
+            return Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true));
         }
         return null;
     }

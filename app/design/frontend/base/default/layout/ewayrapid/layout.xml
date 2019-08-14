@@ -123,6 +123,24 @@
         </reference>
     </opc_index_index>
 
+    <gomage_checkout_onepage_index>
+        <reference name="head">
+            <action ifconfig="payment/ewayrapid_general/active" method="addJs"><script>ewayrapid/eCrypt.js</script></action>
+            <action ifconfig="payment/ewayrapid_general/active" method="addJs"><script>ewayrapid/ewayrapid.js</script></action>
+            <action ifconfig="payment/ewayrapid_general/active" method="addCss"><script>css/ewayrapid.css</script></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="core/template" name="ewayrapid.js" after="-">
+                <action ifconfig="payment/ewayrapid_general/active" method="setTemplate">
+                    <template>ewayrapid/js.phtml</template>
+                </action>
+                <action method="setCheckoutExtension">
+                    <name>LightCheckout</name>
+                </action>
+            </block>
+        </reference>
+    </gomage_checkout_onepage_index>
+
     <hanlder_transparent_layout_empty>
         <update handle="default"/>
         <reference name="root">

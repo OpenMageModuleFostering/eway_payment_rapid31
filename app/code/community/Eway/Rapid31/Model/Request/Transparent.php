@@ -51,6 +51,15 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
         $this->setCustomer($customerParam);
 
         $shippingAddress = $quote->getShippingAddress();
+
+        // copy BillingAddress to ShippingAddress if checkout with guest or register
+        $checkoutMethod = $quote->getCheckoutMethod();
+        if ($checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_GUEST
+            || $checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER
+        ) {
+            $shippingAddress = $billingAddress;
+        }
+
         $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
         $shippingParam->setFirstName($shippingAddress->getFirstname())
             ->setLastName($shippingAddress->getLastname())
@@ -500,6 +509,14 @@ class Eway_Rapid31_Model_Request_Transparent extends Eway_Rapid31_Model_Request_
 
         $billing = $quote->getBillingAddress();
         $shipping = $quote->getShippingAddress();
+
+        // copy BillingAddress to ShippingAddress if checkout with guest or register
+        $checkoutMethod = $quote->getCheckoutMethod();
+        if ($checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_GUEST
+            || $checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER
+        ) {
+            $shipping = $billing;
+        }
 
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         if (Mage::helper('ewayrapid')->isBackendOrder()) {

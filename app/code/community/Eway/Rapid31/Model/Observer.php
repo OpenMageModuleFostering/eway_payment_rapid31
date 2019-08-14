@@ -146,7 +146,7 @@ class Eway_Rapid31_Model_Observer {
         $profile->save();
 
         // charge Initial Fee if It is greater than 0 and is numeric
-         if ($profile->getInitAmount()
+        if ($profile->getInitAmount()
             && (int) $profile->getInitAmount() > 0
             && (string)(int) $profile->getInitAmount() === ltrim($profile->getInitAmount(), '0')
         ) {

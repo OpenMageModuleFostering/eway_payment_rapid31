@@ -24,10 +24,32 @@
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
-
 <?php
-    $cards = $this->getCards();
-    $showCount = count($cards) > 1;
+$_helper = Mage::helper('ewayrapid');
+/* @var Eway_Rapid31_Block_Info_Direct_Notsaved $this */
+$_info = $this->getInfo();
+/* @var Mage_Sales_Model_Order_Payment $_info */
+
 ?>
 
+
 <?php echo $this->getMethod()->getTitle() ?>{{pdf_row_separator}}
+<?php if($_info->getCcOwner()): ?>
+<?php echo $_helper->__('Card Holder\'s Name') ?>: <?php echo $_info->getCcOwner(); ?>{{pdf_row_separator}}
+<?php endif; ?>
+
+<?php if($_info->getCcLast4()): ?>
+<?php echo $_helper->__('Credit Card Number') ?>: <?php echo str_pad($_info->getCcLast4(), 16, '*', STR_PAD_LEFT); ?>{{pdf_row_separator}}
+<?php endif; ?>
+
+<?php if($_info->getCcExpMonth()): ?>
+<?php echo $_helper->__('Credit Card Expiry') ?>: <?php echo str_pad($_info->getCcExpMonth(), 2, '0', STR_PAD_LEFT); ?> / <?php echo $_info->getCcExpYear() ?>{{pdf_row_separator}}
+<?php endif; ?>
+
+<?php if($_info->getCcType()): ?>
+<?php echo $_helper->__('Credit Card Type') ?>: <?php echo $this->getCcTypeName($_info->getCcType()); ?>{{pdf_row_separator}}
+<?php endif; ?>
+
+<?php if($_info->getLastTransId()): ?>
+<?php echo $_helper->__('Last Transaction ID') ?>: <?php echo $_info->getLastTransId(); ?>{{pdf_row_separator}}
+<?php endif; ?>

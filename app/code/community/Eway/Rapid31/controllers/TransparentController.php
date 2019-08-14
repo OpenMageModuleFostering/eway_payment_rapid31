@@ -100,11 +100,24 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
                 if (isset($data['CompleteCheckoutURL']))
                     Mage::getSingleton('core/session')->setCompleteCheckoutURL($data['CompleteCheckoutURL']);
                 if ($this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD || $this->transMethod == Eway_Rapid31_Model_Config::PAYPAL_EXPRESS_METHOD || $this->transMethod == Eway_Rapid31_Model_Config::MASTERPASS_METHOD ) {
-                    $urlRedirect = Mage::getUrl('ewayrapid/transparent/redirect') . '?AccessCode=' . $data['AccessCode'];
+                    $urlRedirect = Mage::getUrl('ewayrapid/transparent/redirect', array('_secure'=>true)) . '?AccessCode=' . $data['AccessCode'];
                 } else {
-                    $urlRedirect = Mage::getUrl('ewayrapid/transparent/paynow') . '?AccessCode=' . $data['AccessCode'];
+                    $urlRedirect = Mage::getUrl('ewayrapid/transparent/paynow', array('_secure'=>true)) . '?AccessCode=' . $data['AccessCode'];
                 }
-                echo($urlRedirect);
+                if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+                    === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
+                    && (Mage::getStoreConfig('onestepcheckout/general/active')
+                        || Mage::getStoreConfig('opc/global/status')
+                        || Mage::getStoreConfig('firecheckout/general/enabled')
+                        || Mage::getStoreConfig('gomage_checkout/general/enabled')
+                        || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+                ) {
+                    $this->_redirectUrl($urlRedirect);
+                    return;
+                }
+                else {
+                    echo($urlRedirect);
+                }
             } else {
                 Mage::getSingleton('core/session')->addError(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later.'));
                 $this->transparentModel()->unsetSessionData();
@@ -114,7 +127,21 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
         } catch (Exception $e) {
             Mage::getSingleton('core/session')->addError(Mage::helper('ewayrapid')->__('An error occurred while connecting to payment gateway. Please try again later.'));
             $this->transparentModel()->unsetSessionData();
-            echo Mage::getUrl('checkout/cart/');
+            $this->transparentModel()->unsetSessionData();
+            if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+                === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
+                && (Mage::getStoreConfig('onestepcheckout/general/active')
+                    || Mage::getStoreConfig('opc/global/status')
+                    || Mage::getStoreConfig('firecheckout/general/enabled')
+                    || Mage::getStoreConfig('gomage_checkout/general/enabled')
+                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+            ) {
+                $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
+                return;
+            }
+            else {
+                echo Mage::getUrl('checkout/cart/');
+            }
             return;
         }
         die;
@@ -213,7 +240,20 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
         } catch (Exception $e) {
             Mage::getSingleton('core/session')->addError(Mage::helper('ewayrapid')->__('Call back error: ' . $e->getMessage()));
             $this->transparentModel()->unsetSessionData();
-            $this->_redirect('checkout/cart/');
+            if (Mage::getStoreConfig('payment/ewayrapid_general/connection_type')
+                === Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT
+                && (Mage::getStoreConfig('onestepcheckout/general/active')
+                    || Mage::getStoreConfig('opc/global/status')
+                    || Mage::getStoreConfig('firecheckout/general/enabled')
+                    || Mage::getStoreConfig('gomage_checkout/general/enabled')
+                    || Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links'))
+            ) {
+                $this->_redirectUrl(Mage::getUrl('checkout/cart/'));
+                return;
+            }
+            else {
+                echo Mage::getUrl('checkout/cart/');
+            }
             return;
         }
     }
@@ -272,9 +312,28 @@ class Eway_Rapid31_TransparentController extends Mage_Checkout_OnepageController
             $this->getOnepage()->getQuote()->getPayment()->setTransactionId($transactionID);
             $this->getOnepage()->getQuote()->getPayment()->setAdditionalInformation('transactionId', $transactionID);
             $this->getOnepage()->getQuote()->getPayment()->setAdditionalInformation('successType', $successType);
+            Mage::getSingleton('core/session')->setData('transparentCheckout', true);
             $orderId = $this->getOnepage()->saveOrder()->getLastOrderId();
-            $this->getOnepage()->getQuote()->save();
 
+            $this->getOnepage()->getQuote()->setIsActive(1);
+            try {
+                $cartHelper = Mage::helper('checkout/cart');
+
+                //Get all items from cart
+                $items = $cartHelper->getCart()->getItems();
+
+                //Loop through all of cart items
+                foreach ($items as $item) {
+                    $itemId = $item->getItemId();
+                    //Remove items, one by one
+                    $cartHelper->getCart()->removeItem($itemId)->save();
+                }
+            } catch (Exception $e) {
+
+            }
+
+            $this->getOnepage()->getQuote()->save();
+            Mage::getSingleton('core/session')->unsetData('transparentCheckout');
             return $orderId;
         } catch (Exception $e) {
             Mage::throwException($e->getMessage());

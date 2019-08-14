@@ -151,6 +151,13 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
         $order = $payment->getOrder();
         $shipping = $order->getShippingAddress();
 
+        // if item is virtual product
+        if (!$shipping) {
+            $quote = Mage::getModel('checkout/cart')->getQuote();
+            if ($quote->isVirtual()) {
+                $shipping = $quote->getBillingAddress();
+            }
+        }
 
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         if (Mage::helper('ewayrapid')->isBackendOrder()) {
@@ -381,7 +388,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
                 'IssueNumber' => $cardData['issueNumber'],
                 'ExpMonth' => $customer['CardExpiryMonth'],
                 'ExpYear' => (!empty($cardData['expYear']) ? $cardData['expYear'] :
-                    (strlen($customer['CardExpiryYear']) == 2 ? '20' . $customer['CardExpiryYear'] : $customer['CardExpiryYear'])),
+                        (strlen($customer['CardExpiryYear']) == 2 ? '20' . $customer['CardExpiryYear'] : $customer['CardExpiryYear'])),
                 'Type' => $cardData['ccType'] ? $cardData['ccType'] : $this->checkCardType($customer['CardNumber']),
                 'Address' => Mage::getModel('ewayrapid/field_customer')->addData($address),
             );
@@ -429,7 +436,7 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
                 'IssueNumber' => $cardData['issueNumber'],
                 'ExpMonth' => $customer['CardExpiryMonth'],
                 'ExpYear' => (!empty($cardData['expYear']) ? $cardData['expYear'] :
-                    (strlen($customer['CardExpiryYear']) == 2 ? '20' . $customer['CardExpiryYear'] : $customer['CardExpiryYear'])),
+                        (strlen($customer['CardExpiryYear']) == 2 ? '20' . $customer['CardExpiryYear'] : $customer['CardExpiryYear'])),
                 'Type' => $cardData['ccType'] ? $cardData['ccType'] : $this->checkCardType($customer['CardNumber']),
                 'Address' => Mage::getModel('ewayrapid/field_customer')->addData($address),
             );
@@ -467,8 +474,8 @@ class Eway_Rapid31_Model_Request_Token extends Eway_Rapid31_Model_Request_Direct
             return 'MC';
         }
         if (preg_match('/^(2131|1800)/', $num)) {
-            return 'JCB';
-        }
+                return 'JCB';
+            }
         if (preg_match('/^36/', $num)) {
             return 'DC';
         }

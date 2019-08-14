@@ -29,11 +29,11 @@ $_code = $this->getMethodCode();
 $_tokens = $this->getTokenList();
 ?>
 
-<dl class="sp-methods" id="payment_form_<?php echo $_code ?>"
+<ul class="sp-methods" id="payment_form_<?php echo $_code ?>"
     style="display:none; padding-left: 16px; padding-bottom: 8px; border: 1px solid rgb(193, 193, 193);">
 
-    <dt>
-    <ul class="form-list" style="display: block;">
+    <li>
+    <ul class="form-list" style="display: block;" id="ul-eway-saved-div-box">
         <li>
             <div class="eway-saved-div-box">
                 <label class="eway-saved-label-box"><?php echo $this->__('Saved Details') ?></label>
@@ -68,10 +68,10 @@ $_tokens = $this->getTokenList();
             </div>
         </li>
     </ul>
-    </dt>
+    </li>
 
 
-    <dt id="eway_save_creditcard">
+    <li id="eway_save_creditcard">
         <input id="p_method_ewayrapid_saved_mastercard" rel="ul_payment_form_<?php echo $_code ?>"
                value="<?php echo Eway_Rapid31_Model_Config::CREDITCARD_METHOD ?>" type="radio"
                name="payment[transparent_saved]" title="Check / Money order" class="radio element_save_creditcard" autocomplete="off"
@@ -159,29 +159,29 @@ $_tokens = $this->getTokenList();
             <?php } ?>
         <?php endif; ?>
     </ul>
-    </dt>
+    </li>
 
     <?php if ($this->getEnablePaypalStandard()) { ?>
-        <dt id="eway_save_paypal" style="display: none">
+        <li id="eway_save_paypal" style="display: none">
             <input id="p_method_ewayrapid_saved_transparent_paypal" rel="payment_form_paypal_saved"
                    value="<?php echo Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD ?>" type="radio"
                    name="payment[transparent_saved]" title="Paypal - eWAY (saved)" class="radio" autocomplete="off">
             <label for="p_method_ewayrapid_saved_transparent_paypal">Paypal Standard </label>
-        </dt>
+        </li>
     <?php } ?>
 
     <?php if ($this->getEnableMasterPass() && Mage::helper('ewayrapid/data')->getPaymentAction() == Eway_Rapid31_Model_Method_Notsaved::ACTION_AUTHORIZE_CAPTURE) { ?>
-        <dt id="eway_save_masterpass" style="display: none">
+        <li id="eway_save_masterpass" style="display: none">
             <input id="p_method_ewayrapid_transparent_masterpass" rel="payment_form_masterpass_saved"
                    value="<?php echo Eway_Rapid31_Model_Config::MASTERPASS_METHOD ?>" type="radio"
                    name="payment[transparent_saved]" title="MasterPass - eWAY (saved)" class="radio" autocomplete="off">
             <label for="p_method_ewayrapid_transparent_masterpass">MasterPass </label>
-        </dt>
+        </li>
     <?php } ?>
-</dl>
+</ul>
 
 <script type="text/javascript">
-
+    var _saved = 0;
     var ewayPaymentToken = new EwayPaymentToken(
         <?php echo $_tokens['tokens_json'] ?>,
         <?php echo count($_tokens['tokens']) ?>,
@@ -222,7 +222,7 @@ $_tokens = $this->getTokenList();
         });
     }
 
-    $$('.radio').each(function (el) {
+    $$('#payment_form_<?php echo $_code ?> .radio').each(function (el) {
         var _rel = $(el).readAttribute('rel');
         //console.log(_rel);
         if (_rel != '' && _rel != null) {
@@ -312,11 +312,33 @@ $_tokens = $this->getTokenList();
             $('ewayrapid_saved_edit') && $('ewayrapid_saved_edit').show();
         }
     }
+
+    setInterval(function(){
+        if(_saved == 1) return false;
+        _saved = 1;
+        $$('#payment_form_ewayrapid_saved .radio:checked').each(function(rd) {
+            if(rd.getValue() == '<?php echo Eway_Rapid31_Model_Config::CREDITCARD_METHOD ?>') {
+                $('ul_payment_form_<?php echo $_code ?>').show();
+            } else if(rd.getValue() == '<?php echo Eway_Rapid31_Model_Config::PAYPAL_STANDARD_METHOD ?>'
+                || rd.getValue() == '<?php echo Eway_Rapid31_Model_Config::MASTERPASS_METHOD ?>') {
+                $('ul_payment_form_<?php echo $_code ?>').hide();
+            } else {
+                $('ul_payment_form_<?php echo $_code ?>').show();
+            }
+        });
+    },300);
 </script>
 
 <script type="text/javascript">
     $('p_method_ewayrapid_saved').observe('click', function () {
         $('p_method_ewayrapid_saved').setAttribute('checked', 'true');
         $('p_method_ewayrapid_notsaved').removeAttribute('checked');
+        $('ul-eway-saved-div-box').show();
+        $$('#payment_form_ewayrapid_saved input[name*=payment]').each(function(inp) {
+            inp.removeAttribute('disabled');
+        });
+        $$('#payment_form_ewayrapid_saved select[name*=payment]').each(function(inp) {
+            inp.removeAttribute('disabled');
+        });
     });
 </script>

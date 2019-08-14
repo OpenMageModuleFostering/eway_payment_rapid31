@@ -31,8 +31,8 @@
             <div class="v-fix" style="float: left; padding-right: 10px;">
                 <select id="ewayrapid_saved_token" name="payment[saved_token]" class="ewayrapid_saved_token">
                     <?php
-                    $_tokens = $this->getTokenList();
-                    $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
+                        $_tokens = $this->getTokenList();
+                        $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
                     ?>
                     <?php foreach($_tokens['tokens'] as $_key => $_token):
                         if ($_key == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->checkCardName($_token) == Eway_Rapid31_Model_Config::CREDITCARD_METHOD): ?>

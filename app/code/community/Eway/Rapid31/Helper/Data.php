@@ -1,10 +1,11 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: hiephm
  * Date: 4/23/14
  * Time: 5:30 PM
- */
+ */ 
 class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
 {
     private $_ccTypeNames = null;
@@ -143,5 +144,12 @@ class Eway_Rapid31_Helper_Data extends Mage_Core_Helper_Abstract
         /* @var Eway_Rapid31_Model_Request_Token $model */
         $model = Mage::getModel('ewayrapid/request_token');
         return $model->checkCardName($card);
+    }
+
+    public function clearSessionSharedpage()
+    {
+        Mage::getSingleton('core/session')->unsetData('editToken');
+        Mage::getSingleton('core/session')->unsetData('newToken');
+        Mage::getSingleton('core/session')->unsetData('sharedpagePaypal');
     }
 }

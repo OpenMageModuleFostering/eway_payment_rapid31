@@ -177,7 +177,7 @@ class Eway_Rapid31_Helper_Customer extends Mage_Core_Helper_Abstract
     {
         $customer = $this->getCurrentCustomer();
         if($customer && $customer->getSavedTokens()) {
-                $tokens = $customer->getSavedTokens()->getTokens();
+            $tokens = $customer->getSavedTokens()->getTokens();
             if(is_array($tokens)) {
                 foreach($tokens as $key => $token) {
                     /* @var Eway_Rapid31_Model_Customer_Token $token */

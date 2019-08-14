@@ -1,7 +1,7 @@
 <?php $_config = Mage::getSingleton('ewayrapid/config'); ?>
 <?php $_backend = Mage::helper('ewayrapid')->isBackendOrder(); ?>
 <?php $_checkoutExtension = $this->getCheckoutExtension(); ?>
-<?php if($_config->isDirectConnection() || $_backend): ?>
+<?php if ($_config->isDirectConnection() || $_backend): ?>
     <script type="text/javascript">
         EwayPayment.supportCardTypes = <?php echo json_encode($_config->getSupportedCardTypes()) ?>;
         <?php if(Mage::helper('ewayrapid')->isBackendOrder()): ?>
@@ -10,31 +10,61 @@
         <?php else: ?>
         <?php switch($_checkoutExtension):
             case 'OneStepCheckout': // OneStepCheckout extension ?>
-        document.observe("dom:loaded", function() {
+        document.observe("dom:loaded", function () {
+
+            <?php if(Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links')): ?>
             var ewayPayment = new EwayPayment($('onestepcheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
-            Payment.prototype.switchMethod = ewayPayment.OneStepCheckout.switchMethod;
-            if(payment.currentMethod) {
-                payment.switchMethod(payment.currentMethod);
+            if (ewayPayment && $('onestepcheckout-form')) {
+                Payment.prototype.switchMethod = ewayPayment.OneStepCheckout.switchMethod;
+                if (payment.currentMethod) {
+                    payment.switchMethod(payment.currentMethod);
+                }
             }
-            $('onestepcheckout-form').submit = function() {
+
+            $('onestepcheckout-form') && ($('onestepcheckout-form').submit = function () {
                 form = eCrypt.doEncrypt();
                 form.submit();
-            };
+            });
+            <?php endif; ?>
+
+            <?php if(Mage::getStoreConfig('onestepcheckout/general/active')): ?>
+            var ewayPayment2 = new EwayPayment($('one-step-checkout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (ewayPayment2 && $('one-step-checkout-form'))
+                Payment.prototype.switchMethod = ewayPayment2.OneStepCheckout.switchMethod;
+
+            $('one-step-checkout-form') && ($('one-step-checkout-form').submit = function () {
+                form = eCrypt.doEncrypt();
+                form.submit();
+            });
+            <?php endif; ?>
+
         });
         <?php break; ?>
+
+        <?php case 'LightCheckout': ?>
+        document.observe("dom:loaded", function () {
+            var ewayPayment = new EwayPayment($('gcheckout-onepage-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (typeof checkout.LightcheckoutSubmitOld == "undefined") {
+                checkout.LightcheckoutSubmitOld = checkout.LightcheckoutSubmit;
+                checkout.LightcheckoutSubmit = ewayPayment.Lightcheckout.LightcheckoutSubmit;
+                checkout.getFormData = ewayPayment.Lightcheckout.getFormData;
+            }
+        });
+        <?php break; ?>
+
         <?php case 'FireCheckout': // FireCheckout extension ?>
-        document.observe("dom:loaded", function() {
+        document.observe("dom:loaded", function () {
             var ewayPayment = new EwayPayment($('firecheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
-            if(typeof FireCheckout.prototype.ewayOldSave == "undefined") {
+            if (typeof FireCheckout.prototype.ewayOldSave == "undefined") {
                 FireCheckout.prototype.ewayOldSave = FireCheckout.prototype.save;
                 FireCheckout.prototype.save = ewayPayment.FireCheckout.save;
             }
         });
         <?php break; ?>
         <?php case 'IWDOnePageCheckout': // FireCheckout extension ?>
-        document.observe("dom:loaded", function() {
+        document.observe("dom:loaded", function () {
             var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
-            if(typeof IWD.OPC.ewayOldSavePayment == "undefined") {
+            if (typeof IWD.OPC.ewayOldSavePayment == "undefined") {
                 IWD.OPC.ewayOldSavePayment = IWD.OPC.savePayment;
                 IWD.OPC.ewayOldSaveOrder = IWD.OPC.saveOrder;
                 IWD.OPC.savePayment = ewayPayment.IWDOnePageCheckout.savePayment;
@@ -54,32 +84,153 @@
     </script>
 <?php endif; ?>
 
-<?php if($_config->isTransparentConnection() && !$_backend): ?>
+<?php if ($_config->isTransparentConnection() && !$_backend): ?>
     <script type="text/javascript">
         var creditcard = '<?php echo Eway_Rapid31_Model_Config::CREDITCARD_METHOD ?>';
+
+        <?php switch($_checkoutExtension):
+                case 'OneStepCheckout': // OneStepCheckout extension ?>
+        document.observe("dom:loaded", function () {
+            <?php if(Mage::getStoreConfig('onestepcheckout/general/rewrite_checkout_links')): ?>
+            var ewayPayment = new EwayPayment($('onestepcheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            Payment.prototype.switchMethod = ewayPayment.OneStepCheckout.switchMethod;
+            if (payment.currentMethod) {
+                payment.switchMethod(payment.currentMethod);
+            }
+
+            $('onestepcheckout-form') && ($('onestepcheckout-form').submit = function () {
+                form = eCrypt.doEncrypt();
+                form.submit();
+            });
+
+            if ($('onestepcheckout-form')) {
+                $('ewayrapid_notsaved_expiration') && $('ewayrapid_notsaved_expiration').writeAttribute('style', 'width:103px !important;');
+                $('ewayrapid_saved_expiration') &&  $('ewayrapid_saved_expiration').writeAttribute('style', 'width:103px !important;');
+                $('ewayrapid_saved_token') && $('ewayrapid_saved_token').writeAttribute('style', 'width:128px !important;');
+                $('v-fix-change') && $('v-fix-change').writeAttribute('style', 'width:60px !important;');
+                $('v-fix-cvn-id') && $('v-fix-cvn-id').writeAttribute('style', 'width:60px !important;');
+
+                $('ul_payment_form_ewayrapid_notsaved') && $('ul_payment_form_ewayrapid_notsaved').setStyle({'margin-left': '-2px'});
+                $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $$('#container_payment_method_ewayrapid_notsaved ul li').each(function (element) {
+                    element.writeAttribute('style', 'float: left; width: 100%');
+                });
+            }
+            <?php endif; ?>
+
+            <?php if(Mage::getStoreConfig('onestepcheckout/general/active')): ?>
+            var ewayPayment2 = new EwayPayment($('one-step-checkout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (ewayPayment2 && $('one-step-checkout-form'))
+                Payment.prototype.switchMethod = ewayPayment2.OneStepCheckout.switchMethod;
+
+            $('one-step-checkout-form') && ($('one-step-checkout-form').submit = function () {
+                form = eCrypt.doEncrypt();
+                form.submit();
+            });
+
+            if ($('one-step-checkout-form')) {
+                $('payment_form_ewayrapid_notsaved') && $('payment_form_ewayrapid_notsaved').setStyle({'width': '95%'});
+                $('payment_form_ewayrapid_saved') &&  $('payment_form_ewayrapid_saved').setStyle({'width': '95%'});
+                $('ul_payment_form_ewayrapid_notsaved') && $('ul_payment_form_ewayrapid_notsaved').setStyle({'margin-left': '-2px'});
+                $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+                $('payment_form_ewayrapid_saved') && $('payment_form_ewayrapid_saved').setStyle({'margin-left': '-2px'});
+
+                $('ewayrapid_notsaved_cc_type_cvv_div') && $$('#ewayrapid_notsaved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');
+                $('ewayrapid_saved_cc_type_cvv_div') && $$('#ewayrapid_saved_cc_type_cvv_div div.v-fix')[0].writeAttribute('style', 'width: 35% !important');
+
+                $$('#ul_payment_form_ewayrapid_notsaved input[type=text]').each(function (element) {
+                    element.writeAttribute('style', 'width: 97% !important;');
+                });
+
+                $('ul_payment_form_ewayrapid_saved') && $$('#ul_payment_form_ewayrapid_saved input[type=text]').each(function (element) {
+                    element.writeAttribute('style', 'width: 97% !important;');
+                });
+
+                $$('#container_payment_method_ewayrapid_notsaved ul li').each(function (element) {
+                    element.writeAttribute('style', 'float: left; width: 100%');
+                });
+                $('container_payment_method_ewayrapid_saved') && $$('#container_payment_method_ewayrapid_saved ul li').each(function (element) {
+                    element.writeAttribute('style', 'float: left; width: 100%');
+                });
+
+                $$('.eway-saved-div-box')[0].writeAttribute('style', 'margin-left:-26px');
+                $('ewayrapid_saved_cc_cid') && $('ewayrapid_saved_cc_cid').removeAttribute('disabled');
+                $('eway_save_paypal') &&  $('eway_save_paypal').hide();
+                $('eway_save_masterpass') && $('eway_save_masterpass').hide();
+                var _ctype = $('ewayrapid_saved_token')[0].readAttribute('rel');
+                if (_ctype == 'paypal') {
+                    $('ewayrapid_saved_cc_type_cvv_div') && $('ewayrapid_saved_cc_type_cvv_div').hide();
+                    $('ewayrapid_saved_edit') && $('ewayrapid_saved_edit').hide();
+                    $$('.element_save_creditcard').each(function (el) {
+                        el.hide();
+                    });
+                } else if ((_ctype == "" || _ctype == null || $('ewayrapid_saved_token').getValue() == 'new')) {
+                    $('<?php echo $_code ?>_cc_number') && $('<?php echo $_code ?>_cc_number').writeAttribute('disabled', false);
+                    $('eway_save_masterpass') && $('eway_save_masterpass').show(150);
+                    $('eway_save_paypal') && $('eway_save_paypal').show(150);
+                    $('ul_payment_form_<?php echo $_code ?>') && $('ul_payment_form_<?php echo $_code ?>').show(150);
+
+                    $('ewayrapid_saved_edit') && $('ewayrapid_saved_edit').hide();
+
+                    $$('.element_save_creditcard').each(function (el) {
+                        el.show();
+                    });
+                    $('ul_payment_form_ewayrapid_saved') && $('ul_payment_form_ewayrapid_saved').show();
+                    $('ewayrapid_saved_cc_type_cvv_div') && $('ewayrapid_saved_cc_type_cvv_div').show();
+                } else {
+                    $$('.element_save_creditcard').each(function (el) {
+                        el.hide();
+                    });
+                }
+            }
+            <?php endif; ?>
+        });
+        <?php break; ?>
+
+        <?php case 'LightCheckout': ?>
+        document.observe("dom:loaded", function () {
+            var ewayPayment = new EwayPayment($('gcheckout-onepage-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (typeof checkout.LightcheckoutSubmitOld == "undefined") {
+                checkout.LightcheckoutSubmitOld = checkout.LightcheckoutSubmit;
+                checkout.LightcheckoutSubmit = ewayPayment.Lightcheckout.LightcheckoutSubmit;
+                checkout.getFormData = ewayPayment.Lightcheckout.getFormData;
+            }
+        });
+        <?php break; ?>
+
+
+        <?php case 'FireCheckout': // FireCheckout extension ?>
+        document.observe("dom:loaded", function () {
+            var ewayPayment = new EwayPayment($('firecheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (typeof FireCheckout.prototype.ewayOldSave == "undefined") {
+                FireCheckout.prototype.ewayOldSave = FireCheckout.prototype.save;
+                FireCheckout.prototype.save = ewayPayment.FireCheckout.savePayment;
+            }
+        });
+        <?php break; ?>
+        <?php case 'IWDOnePageCheckout': // FireCheckout extension ?>
+        document.observe("dom:loaded", function () {
+            var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if (typeof IWD.OPC.ewayOldSavePayment == "undefined") {
+                IWD.OPC.ewayOldSavePayment = IWD.OPC.savePayment;
+                IWD.OPC.savePayment = ewayPayment.IWDOnePageCheckout.savePaymentTrans;
+            }
+        });
+        <?php break; ?>
+        <?php case 'MultiShippingAddress': // Magento default multi shipping address ?>
+        var ewayPayment = new EwayPayment($('multishipping-billing-form'), '<?php echo $_config->getEncryptionKey() ?>');
+        <?php break; ?>
+
+        <?php default: // Magento default one page checkout ?>
         var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
         Payment.prototype.save = ewayPayment.savePaymentWithTransEncryption;
-        Review.prototype.save = function() {
-            $('review-please-wait').show();
-            $('review-buttons-container').down('button').hide();
-            var request = new Ajax.Request(
-                '<?php echo Mage::getUrl('ewayrapid/transparent/build'); ?>',
-                {
-                    method:'post',
-                    onComplete: {
 
-                    },
-                    onSuccess: function(response) {
-                        if(response.responseText != '0') {
-                            window.location = response.responseText;
-                        }
-                        return false;
-                    },
-                    onFailure: {
-
-                    }
-                }
-            );
+        if (typeof (ewayPayment.ewaysavedOldOrder) == "undefined") {
+            ewayPayment.ewaysavedOldOrder = Review.prototype.save;
         }
+        ewayPayment.paymentUrl = "<?php echo Mage::getUrl('ewayrapid/transparent/build', array('_secure'=>true)); ?>";
+        Review.prototype.save = ewayPayment.saveReviewWithEncryptionTrans;
+        <?php endswitch; ?>
+
     </script>
 <?php endif; ?>

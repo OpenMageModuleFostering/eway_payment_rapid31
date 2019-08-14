@@ -8,7 +8,7 @@ $formUrl = $this->getSaveUrl();
 $transparent = false;
 switch ($connectionType) {
     case Eway_Rapid31_Model_Config::CONNECTION_DIRECT:
-        echo '<script type="text/javascript" src="' . Mage::getBaseUrl() . '/js/ewayrapid/eCrypt.js"></script>';
+        echo '<script type="text/javascript" src="' . str_replace('index.php', '', Mage::getBaseUrl()) . 'js/ewayrapid/eCrypt.js"></script>';
         break;
     case Eway_Rapid31_Model_Config::CONNECTION_TRANSPARENT:
         $transparent = true;
@@ -538,19 +538,19 @@ if ($connectionType !== Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE) {
         }
 
         /*if ($('ewayrapid_saved_start_year').value != '' || $('ewayrapid_saved_start_month').value != '') {
-         if ((new Date($('ewayrapid_saved_expiration_yr').value + '-'
-         + ($('ewayrapid_saved_expiration').value <= 9 ? '0' : '') + $('ewayrapid_saved_expiration').value).getTime() )
-         - ( new Date($('ewayrapid_saved_start_year').value + '-'
-         + ($('ewayrapid_saved_start_month').value <= 9 ? '0' : '') + $('ewayrapid_saved_start_month').value).getTime() )
-         <= 0 ) {
-         $$('li.value_from_date')[0].insert({after: '<div style="" id="validate_from_date_message" ' +
-         'class="validation-advice">From Date is invalid. It must be earlier than Expiration Date.</div>'});
-         $('ewayrapid_saved_start_month').addClassName('validation-failed');
-         $('ewayrapid_saved_start_year').addClassName('validation-failed');
-         $$('li.value_from_date')[0].addClassName('validation-error');
-         return;
-         }
-         }*/
+            if ((new Date($('ewayrapid_saved_expiration_yr').value + '-'
+                + ($('ewayrapid_saved_expiration').value <= 9 ? '0' : '') + $('ewayrapid_saved_expiration').value).getTime() )
+                - ( new Date($('ewayrapid_saved_start_year').value + '-'
+                + ($('ewayrapid_saved_start_month').value <= 9 ? '0' : '') + $('ewayrapid_saved_start_month').value).getTime() )
+                <= 0 ) {
+                $$('li.value_from_date')[0].insert({after: '<div style="" id="validate_from_date_message" ' +
+                    'class="validation-advice">From Date is invalid. It must be earlier than Expiration Date.</div>'});
+                $('ewayrapid_saved_start_month').addClassName('validation-failed');
+                $('ewayrapid_saved_start_year').addClassName('validation-failed');
+                $$('li.value_from_date')[0].addClassName('validation-error');
+                return;
+            }
+        }*/
 
         // Waiting
         $(obj).setStyle({'display': 'none'});

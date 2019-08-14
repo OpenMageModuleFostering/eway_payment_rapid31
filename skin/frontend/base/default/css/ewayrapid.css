@@ -32,3 +32,30 @@
 .eway-saved-label-box  {float: left;}
 .eway-saved-edit-box { float: left;}
 .eway-saved-select-box {float: left;margin-left: 10px;}
+/** support 1.9 */
+#payment_form_ewayrapid_saved #ul-eway-saved-div-box { float: left;  width: 100%; }
+#onestepcheckout-form #ewayrapid_saved_cc_type_exp_div .v-fix,
+#onestepcheckout-form #ewayrapid_notsaved_cc_type_exp_div .v-fix,
+#one-step-checkout-form #ewayrapid_saved_cc_type_exp_div .v-fix,
+#one-step-checkout-form #ewayrapid_notsaved_cc_type_exp_div .v-fix { width: 48%; }
+/*gcheckout-onepage*/
+#gcheckout-onepage-form #gcheckout-payment-methods #p_method_ewayrapid_notsaved,
+#gcheckout-onepage-form #gcheckout-payment-methods #p_method_ewayrapid_saved { float: none; margin: 0px 0px 0px 0px !important;}
+#gcheckout-onepage-form #gcheckout-payment-methods #p_method_checkmo,
+#gcheckout-onepage-form #gcheckout-payment-methods #p_method_ccsave,
+#gcheckout-onepage-form #gcheckout-payment-methods #p_method_cashondelivery { float: none; margin: 0px 0px 0px 0px !important;}
+#gcheckout-onepage-form #gcheckout-payment-methods #payment_form_ewayrapid_notsaved,
+#gcheckout-onepage-form #gcheckout-payment-methods #payment_form_ewayrapid_saved { margin-bottom: 10px !important; }
+#gcheckout-onepage-form #gcheckout-payment-methods #ul_payment_form_ewayrapid_notsaved,
+#gcheckout-onepage-form #gcheckout-payment-methods #ul_payment_form_ewayrapid_saved,
+#gcheckout-onepage-form #gcheckout-payment-methods #payment_form_ewayrapid_notsaved,
+#gcheckout-onepage-form #gcheckout-payment-methods #payment_form_ewayrapid_saved { width:90% !important;padding: 5px !important; }
+#gcheckout-onepage-form #gcheckout-payment-methods #ul_payment_form_ewayrapid_notsaved,
+#gcheckout-onepage-form #gcheckout-payment-methods #ul_payment_form_ewayrapid_saved { margin-top: 7px !important; }
+#gcheckout-onepage-form #gcheckout-payment-methods #ul-eway-saved-div-box #ewayrapid_saved_token { margin-left: 2px !important; float: left; }
+#gcheckout-onepage-form #gcheckout-payment-methods .eway-saved-div-box { padding: 5px !important; width: 94% !important;}
+#gcheckout-onepage-form #gcheckout-payment-methods #ul-eway-saved-div-box #ewayrapid_saved_token { width: 50% !important;margin-right: 5px !important;}
+#one-step-checkout-form #onestepcheckout-payment-methods #ul-eway-saved-div-box #ewayrapid_saved_token { width: 48% !important;margin-left: 5px !important;margin-right: 5px !important;float: left; }
+#container_payment_method_ewayrapid_saved label,
+#container_payment_method_ewayrapid_notsaved label{ text-align: left; }
+.eway-saved-label-box { width: auto !important; }

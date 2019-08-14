@@ -242,6 +242,15 @@ class Eway_Rapid31_Model_Request_Sharedpage extends Eway_Rapid31_Model_Request_A
 
         // add Shipping Address
         $shippingAddress = $this->_quote->getShippingAddress();
+
+        // copy BillingAddress to ShippingAddress if checkout with guest or register
+        $checkoutMethod = $this->_quote->getCheckoutMethod();
+        if ($checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_GUEST
+            || $checkoutMethod == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER
+        ) {
+            $shippingAddress = $billingAddress;
+        }
+
         $shippingParam = Mage::getModel('ewayrapid/field_shippingAddress');
         $shippingParam->setFirstName($shippingAddress->getFirstname())
             ->setLastName($shippingAddress->getLastname())

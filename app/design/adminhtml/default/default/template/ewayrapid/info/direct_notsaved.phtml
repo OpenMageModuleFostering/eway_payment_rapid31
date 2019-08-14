@@ -25,40 +25,54 @@
  */
 ?>
 <?php
-    $_helper = Mage::helper('ewayrapid');
-    /* @var Eway_Rapid31_Block_Info_Direct_Notsaved $this */
-    $_info = $this->getInfo();
-    /* @var Mage_Sales_Model_Order_Payment $_info */
+$_helper = Mage::helper('ewayrapid');
+/* @var Eway_Rapid31_Block_Info_Direct_Notsaved $this */
+$_info = $this->getInfo();
+/* @var Mage_Sales_Model_Order_Payment $_info */
 
 ?>
 <div class="cards-list">
 
-<?php if (!$this->getHideTitle()): ?>
-    <div class="bold"><?php echo $this->htmlEscape($this->getMethod()->getTitle()) ?></div>
-<?php endif;?>
+    <?php if (!$this->getHideTitle()): ?>
+        <div class="bold"><?php echo $this->htmlEscape($this->getMethod()->getTitle()) ?></div>
+    <?php endif;?>
 
-<table class="info-table">
-    <tbody>
+    <table class="info-table">
+        <tbody>
+        <?php if($_info->getCcOwner()) : ?>
         <tr>
             <td><?php echo $_helper->__('Card Holder\'s Name') ?>:</td>
             <td><?php echo $_info->getCcOwner(); ?></td>
         </tr>
+        <?php endif;?>
+
+        <?php if($_info->getCcLast4()) : ?>
         <tr>
             <td><?php echo $_helper->__('Credit Card Number') ?>:</td>
             <td><?php echo str_pad($_info->getCcLast4(), 16, '*', STR_PAD_LEFT); ?></td>
         </tr>
+        <?php endif;?>
+
+        <?php if($_info->getCcExpMonth()) : ?>
         <tr>
             <td><?php echo $_helper->__('Credit Card Expiry') ?>:</td>
             <td><?php echo str_pad($_info->getCcExpMonth(), 2, '0', STR_PAD_LEFT); ?> / <?php echo $_info->getCcExpYear() ?></td>
         </tr>
+        <?php endif;?>
+
+        <?php if($_info->getCcType()) : ?>
         <tr>
             <td><?php echo $_helper->__('Credit Card Type') ?>:</td>
             <td><?php echo $this->getCcTypeName($_info->getCcType()); ?></td>
         </tr>
+        <?php endif;?>
+
+        <?php if($_info->getLastTransId()) : ?>
         <tr>
             <td><?php echo $_helper->__('Last Transaction ID') ?>:</td>
             <td><?php echo $_info->getLastTransId(); ?></td>
         </tr>
-    </tbody>
-</table>
+        <?php endif;?>
+        </tbody>
+    </table>
 </div>

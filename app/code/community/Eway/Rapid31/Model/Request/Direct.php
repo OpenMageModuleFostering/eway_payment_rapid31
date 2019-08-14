@@ -182,6 +182,14 @@ class Eway_Rapid31_Model_Request_Direct extends Eway_Rapid31_Model_Request_Abstr
         $billing = $order->getBillingAddress();
         $shipping = $order->getShippingAddress();
 
+        // if item is virtual product
+        if (!$shipping) {
+            $quote = Mage::getModel('checkout/cart')->getQuote();
+            if ($quote->isVirtual()) {
+                $shipping = $quote->getBillingAddress();
+            }
+        }
+
         $this->setCustomerIP(Mage::helper('core/http')->getRemoteAddr());
         if(Mage::helper('ewayrapid')->isBackendOrder()) {
             $this->setTransactionType(Eway_Rapid31_Model_Config::TRANSACTION_MOTO);

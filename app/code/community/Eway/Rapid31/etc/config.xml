@@ -254,7 +254,7 @@
                 <cctypes>VI,MC</cctypes>
                 <order_status>eway_captured</order_status>
                 <allowspecific>0</allowspecific>
-                <ssl_verification>1</ssl_verification>
+                <ssl_verification>0</ssl_verification>
                 <transfer_cart_items>1</transfer_cart_items>
                 <debug>0</debug>
                 <billing_agreement_title>eWAY Billing Agreement</billing_agreement_title>

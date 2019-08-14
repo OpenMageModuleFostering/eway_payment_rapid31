@@ -53,6 +53,7 @@ class Eway_Rapid31_Model_Method_Saved extends Eway_Rapid31_Model_Method_Notsaved
         }
 
         if($data->getSavedToken() == Eway_Rapid31_Model_Config::TOKEN_NEW) {
+            Mage::helper('ewayrapid')->clearSessionSharedpage();
             if ($this->_connectionType === Eway_Rapid31_Model_Config::CONNECTION_SHARED_PAGE
                 && !$this->_isBackendOrder
             ) {

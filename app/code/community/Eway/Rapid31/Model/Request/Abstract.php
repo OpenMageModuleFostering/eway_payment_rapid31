@@ -99,7 +99,8 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
             $this->_log("There is an error in making API request: %s", curl_error($ch));
         } else {
             $info = curl_getinfo($ch);
-            if ($info['http_code'] == 401 || $info['http_code'] == 404) {
+            $http_code = intval(trim($info['http_code']));
+            if ($http_code == 401 || $http_code == 404 || $http_code == 403) {
                 $response->isSuccess(false);
                 $response->setMessage(Mage::helper('ewayrapid')->__("Please check the API Key and Password %s", $mode));
                 $this->_log('Access denied. HTTP_CODE = ' . $info['http_code']);
@@ -107,9 +108,10 @@ abstract class Eway_Rapid31_Model_Request_Abstract extends Eway_Rapid31_Model_Js
                 $response->isSuccess(true);
                 $response->decodeJSON($result);
                 if($this->_config->isDebug()) {
-                    $this->_log('SUCCESS. Response body:');
+                    $this->_log('SUCCESS. Response body: ');
                     $this->_log(print_r(json_decode($result, true), true));
                 }
+                $this->_log('SUCCESS. HTTP_CODE = ' . $info['http_code']);
             }
             curl_close($ch);
         }

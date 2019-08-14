@@ -14,7 +14,7 @@ class Eway_Rapid31_Block_Info_Sharedpage_Saved extends Mage_Payment_Block_Info
      */
     public function toPdf()
     {
-        $this->setTemplate('ewayrapid/pdf/sharedpage_saved.phtml');
+        $this->setTemplate('ewayrapid/pdf/direct_notsaved.phtml');
         return $this->toHtml();
     }
 

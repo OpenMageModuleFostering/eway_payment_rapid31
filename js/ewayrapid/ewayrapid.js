@@ -1,9 +1,10 @@
 var EwayPayment = Class.create();
 EwayPayment.isEwayRapidMethod = function(method) {
     return ("ewayrapid_saved" === method || "ewayrapid_notsaved" === method);
-}
+};
 EwayPayment.supportCardTypes = ['AE', 'VI', 'MC', 'JCB', 'DC', 'VE', 'ME'];
 EwayPayment.prototype = {
+    paymentUrl : null,
     ewayPayment: this,
     initialize: function(form, encryptionKey) {
         if(form) {
@@ -39,37 +40,39 @@ EwayPayment.prototype = {
     },
 
     savePaymentWithTransEncryption: function() {
-        if (checkout.loadWaiting!=false) return;
-        var validator = new Validation(this.form);
-        if (this.validate() && validator.validate()) {
-            checkout.setLoadWaiting('payment');
-            var form = $(this.form);
-            var _method = $$("input[name='payment[method]']:checked")[0].getValue();
-            var _transparent_method = '';
+        if(EwayPayment.isEwayRapidMethod(payment.currentMethod)) {
+            if (checkout.loadWaiting != false) return;
+            var validator = new Validation(this.form);
+            if (this.validate() && validator.validate()) {
+                checkout.setLoadWaiting('payment');
+                var form = $(this.form);
+                var _method = $$("input[name='payment[method]']:checked")[0].getValue();
+                var _transparent_method = '';
 
-            if(_method == 'ewayrapid_notsaved' && $$("input[name='payment[transparent_notsaved]']:checked").length > 0) {
-                _transparent_method = $$("input[name='payment[transparent_notsaved]']:checked")[0];
-            } else if(_method == 'ewayrapid_saved' && $$("input[name='payment[transparent_saved]']:checked").length > 0) {
-                _transparent_method = $$("input[name='payment[transparent_saved]']:checked")[0];
-            }
-
-            if(_transparent_method != '' && $(_transparent_method.id).getValue() == creditcard) {
-                if($$("input[id*='ewayrapid_'][name='payment[method]']:checked").length > 0) {
-                    form = eCrypt.doEncrypt();
+                if (_method == 'ewayrapid_notsaved' && $$("input[name='payment[transparent_notsaved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_notsaved]']:checked")[0];
+                } else if (_method == 'ewayrapid_saved' && $$("input[name='payment[transparent_saved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_saved]']:checked")[0];
                 }
-            }
 
-            this.ewayForm = form;
-            var request = new Ajax.Request(
-                this.saveUrl,
-                {
-                    method:'post',
-                    onComplete: this.onComplete,
-                    onSuccess: this.onSave,
-                    onFailure: checkout.ajaxFailure.bind(checkout),
-                    parameters: $(form.id).serialize()
+                if (_transparent_method != '' && $(_transparent_method.id).getValue() == creditcard) {
+                    if ($$("input[id*='ewayrapid_'][name='payment[method]']:checked").length > 0) {
+                        form = eCrypt.doEncrypt();
+                    }
                 }
-            );
+
+                this.ewayForm = form;
+                var request = new Ajax.Request(
+                    this.saveUrl,
+                    {
+                        method: 'post',
+                        onComplete: this.onComplete,
+                        onSuccess: this.onSave,
+                        onFailure: checkout.ajaxFailure.bind(checkout),
+                        parameters: $(form.id).serialize()
+                    }
+                );
+            }
         }
     },
 
@@ -92,6 +95,33 @@ EwayPayment.prototype = {
                 onFailure: checkout.ajaxFailure.bind(checkout)
             }
         );
+    },
+    saveReviewWithEncryptionTrans: function () {
+        if (EwayPayment.isEwayRapidMethod(payment.currentMethod) && ewayPayment.paymentUrl != null) {
+            $('review-please-wait') && $('review-please-wait').show();
+            $('review-buttons-container') && $('review-buttons-container').down('button').hide();
+
+            var request = new Ajax.Request(
+                ewayPayment.paymentUrl,
+                {
+                    method: 'post',
+                    onComplete: {},
+                    onSuccess: function (response) {
+                        if (response.responseText != '0') {
+                            window.location = response.responseText;
+                        }
+                        return false;
+                    },
+                    onFailure: {}
+                }
+            );
+        } else {
+            this.prototype.ewaysavedOldOrder();
+        }
+    },
+    subMitForm: function () {alert(12121212);
+        form = eCrypt.doEncrypt();
+        form.submit();
     },
 
     submitAdminOrder: function() {
@@ -172,6 +202,58 @@ EwayPayment.prototype = {
             } else if(typeof this.ewayOldSave == 'function') {
                 this.ewayOldSave(urlSuffix, forceSave);
             }
+        },
+        savePayment: function(urlSuffix, forceSave) {
+            var currentMethod = payment.currentMethod ? payment.currentMethod : '';
+            if(EwayPayment.isEwayRapidMethod(currentMethod)) {
+                if (this.loadWaiting != false) {
+                    return;
+                }
+
+                if (!this.validate()) {
+                    return;
+                }
+
+                // infostrates tnt
+                if (!forceSave && (typeof shippingMethod === 'object')
+                    && shippingMethod.getCurrentMethod().indexOf("tnt_") === 0) {
+
+                    shippingMethodTnt(shippingMethodTntUrl);
+                    return;
+                }
+                // infostrates tnt
+
+                checkout.setLoadWaiting(true);
+
+                var params = Form.serialize(this.form, true);
+                $('review-please-wait').show();
+
+                var _method = $$("input[name='payment[method]']:checked")[0].getValue();
+                var _transparent_method = '';
+                if (_method == 'ewayrapid_notsaved' && $$("input[name='payment[transparent_notsaved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_notsaved]']:checked")[0];
+                } else if (_method == 'ewayrapid_saved' && $$("input[name='payment[transparent_saved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_saved]']:checked")[0];
+                }
+
+                if (_transparent_method != '' && $(_transparent_method.id).getValue() == creditcard) {
+                    if ($$("input[id*='ewayrapid_'][name='payment[method]']:checked").length > 0) {
+                        encryptedForm = eCrypt.doEncrypt();
+                    }
+                }
+
+                params = Form.serialize(encryptedForm, true);
+
+                urlSuffix = urlSuffix || '';
+                var request = new Ajax.Request(this.urls.save + urlSuffix, {
+                    method:'post',
+                    parameters:params,
+                    onSuccess: this.setResponse.bind(this),
+                    onFailure: this.ajaxFailure.bind(this)
+                });
+            } else if(typeof this.ewayOldSave == 'function') {
+                this.ewayOldSave(urlSuffix, forceSave);
+            }
         }
     },
 
@@ -182,6 +264,33 @@ EwayPayment.prototype = {
                     IWD.OPC.Checkout.xhr.abort();
                 }
                 IWD.OPC.Checkout.showLoader();
+                var ewayForm = eCrypt.doEncrypt();
+                form = $j(ewayForm).serializeArray();
+                IWD.OPC.Checkout.xhr = $j.post(IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',form, IWD.OPC.preparePaymentResponse,'json');
+            } else if(typeof IWD.OPC.ewayOldSavePayment == 'function') {
+                IWD.OPC.ewayOldSavePayment();
+            }
+        },
+        savePaymentTrans: function() {
+            if(EwayPayment.isEwayRapidMethod(payment.currentMethod)) {
+                /*var ewayForm = $(this.form);
+                if (IWD.OPC.Checkout.xhr!=null){
+                    IWD.OPC.Checkout.xhr.abort();
+                }
+                IWD.OPC.Checkout.showLoader();
+                var _method = $$("input[name='payment[method]']:checked")[0].getValue();
+                var _transparent_method = '';
+                if (_method == 'ewayrapid_notsaved' && $$("input[name='payment[transparent_notsaved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_notsaved]']:checked")[0];
+                } else if (_method == 'ewayrapid_saved' && $$("input[name='payment[transparent_saved]']:checked").length > 0) {
+                    _transparent_method = $$("input[name='payment[transparent_saved]']:checked")[0];
+                }
+
+                if (_transparent_method != '' && $(_transparent_method.id).getValue() == creditcard) {
+                    if ($$("input[id*='ewayrapid_'][name='payment[method]']:checked").length > 0) {
+                        ewayForm = eCrypt.doEncrypt();
+                    }
+                }*/
                 var ewayForm = eCrypt.doEncrypt();
                 form = $j(ewayForm).serializeArray();
                 IWD.OPC.Checkout.xhr = $j.post(IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',form, IWD.OPC.preparePaymentResponse,'json');
@@ -205,8 +314,226 @@ EwayPayment.prototype = {
                 IWD.OPC.ewayOldSaveOrder();
             }
         }
+    },
+    Lightcheckout : {
+        LightcheckoutSubmit: function() {
+            if (payment.currentMethod && (payment.currentMethod.indexOf('sagepay') == 0) &&
+                (SageServer != undefined) && (review != undefined)) {
+                if (checkoutForm.validator.validate()) {
+                    review.preparedata();
+                }
+            }
+            else {
+                if (checkoutForm.validator.validate()) {
+                    this.submit(this.getFormData(), 'save_payment_methods');
+                }
+            }
+        },
+        submit: function (params, action) {
+
+            this.showLoadinfo();
+
+            params.action = action;
+
+            var request = new Ajax.Request(this.url,
+                {
+                    method: 'post',
+                    parameters: params,
+                    onSuccess: function (transport) {
+
+                        eval('var response = ' + transport.responseText);
+
+                        if (response.messages_block) {
+                            var gcheckout_onepage_wrap = $$('div.gcheckout-onepage-wrap')[0];
+                            if (gcheckout_onepage_wrap) {
+                                new Insertion.Before(gcheckout_onepage_wrap, response.messages_block);
+                            }
+                            this.disable_place_order = true;
+                        } else {
+                            this.disable_place_order = false;
+                        }
+
+                        if (response.url) {
+
+                            this.existsreview = false;
+                            setLocation(response.url);
+
+                        } else {
+
+                            if (response.error) {
+                                if (response.message) {
+                                    alert(response.message);
+                                }
+                                this.existsreview = false;
+                                this.hideLoadinfo();
+                            } else {
+
+                                var process_save_order = false;
+
+                                if (response.methods) {
+                                    // Quote isVirtual
+                                    this.innerHTMLwithScripts($('gcheckout-onepage-methods'), response.methods);
+                                    var wrap = $$('div.gcheckout-onepage-wrap')[0];
+                                    if (wrap && !wrap.hasClassName('not_shipping_mode')) {
+                                        wrap.addClassName('not_shipping_mode');
+                                    }
+                                    if ($('billing_use_for_shipping_yes') && $('billing_use_for_shipping_yes').up('li.control')) {
+                                        $('billing_use_for_shipping_yes').up('li.control').remove();
+                                    }
+                                    if ($('gcheckout-shipping-address')) {
+                                        $('gcheckout-shipping-address').remove();
+                                    }
+                                    payment.init();
+                                    this.observeMethods();
+                                }
+
+                                if (response.shippings) {
+                                    if (shipping_rates_block = $('gcheckout-shipping-method-available')) {
+                                        this.innerHTMLwithScripts(shipping_rates_block, response.shippings);
+                                        this.observeShippingMethods();
+                                    }
+                                }
+
+                                if (response.payments) {
+                                    this.innerHTMLwithScripts($('gcheckout-payment-methods-available'), response.payments);
+                                    payment.init();
+                                    this.observePaymentMethods();
+                                }
+
+                                if (response.gift_message) {
+                                    if (giftmessage_block = $('gomage-lightcheckout-giftmessage')) {
+                                        this.innerHTMLwithScripts(giftmessage_block, response.gift_message);
+                                    }
+                                }
+
+                                if (response.toplinks) {
+                                    this.replaceTopLinks(response.toplinks);
+                                }
+
+                                if (response.minicart) {
+                                    this.replaceMiniCart(response);
+                                }
+
+                                if (response.cart_sidebar && typeof(GomageProcartConfig) != 'undefined') {
+                                    GomageProcartConfig._replaceEnterpriseTopCart(response.cart_sidebar, ($('topCartContent') && $('topCartContent').visible()));
+                                }
+
+                                if (response.review) {
+                                    this.innerHTMLwithScripts($$('#gcheckout-onepage-review div.totals')[0], response.review);
+                                }
+
+                                if (response.content_billing) {
+                                    var div_billing = document.createElement('div');
+                                    div_billing.innerHTML = response.content_billing;
+                                    $('gcheckout-onepage-address').replaceChild(div_billing.firstChild, $('gcheckout-billing-address'));
+                                }
+
+                                if (response.content_shipping && $('gcheckout-shipping-address')) {
+                                    var div_shipping = document.createElement('div');
+                                    div_shipping.innerHTML = response.content_shipping;
+                                    $('gcheckout-onepage-address').replaceChild(div_shipping.firstChild, $('gcheckout-shipping-address'));
+                                }
+
+                                if (response.content_billing || response.content_shipping) {
+                                    this.observeAddresses();
+                                    initAddresses();
+                                }
+
+                                if (response.section == 'varify_taxvat') {
+
+                                    if ($('billing_taxvat_verified')) {
+                                        $('billing_taxvat_verified').remove();
+                                    }
+
+                                    if ($('shipping_taxvat_verified')) {
+                                        $('shipping_taxvat_verified').remove();
+                                    }
+
+                                    this.taxvat_verify_result = response.verify_result;
+
+                                    if ($('billing_taxvat') && $('billing_taxvat').value) {
+                                        if (response.verify_result.billing) {
+                                            if (label = $('billing_taxvat').parentNode.parentNode.getElementsByTagName('label')[0]) {
+                                                label.innerHTML += '<strong id="billing_taxvat_verified" style="margin-left:5px;">(<span style="color:green;">Verified</span>)</strong>';
+                                                $('billing_taxvat').removeClassName('validation-failed');
+                                            }
+                                        } else if ($('billing_taxvat').value) {
+                                            if (label = $('billing_taxvat').parentNode.parentNode.getElementsByTagName('label')[0]) {
+                                                label.innerHTML += '<strong id="billing_taxvat_verified" style="margin-left:5px;">(<span style="color:red;">Not Verified</span>)</strong>';
+                                            }
+                                        }
+                                    }
+
+                                    if ($('shipping_taxvat') && $('shipping_taxvat').value) {
+                                        if (response.verify_result.shipping) {
+                                            if (label = $('shipping_taxvat').parentNode.parentNode.getElementsByTagName('label')[0]) {
+                                                label.innerHTML += '<strong id="shipping_taxvat_verified" style="margin-left:5px;">(<span style="color:green;">Verified</span>)</strong>';
+                                                $('shipping_taxvat').removeClassName('validation-failed');
+                                            }
+                                        } else if ($('shipping_taxvat').value) {
+                                            if (label = $('shipping_taxvat').parentNode.parentNode.getElementsByTagName('label')[0]) {
+                                                label.innerHTML += '<strong id="shipping_taxvat_verified" style="margin-left:5px;">(<span style="color:red;">Not Verified</span>)</strong>';
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                                if (response.section == 'centinel') {
+
+                                    if (response.centinel) {
+                                        this.showCentinel(response.centinel);
+                                    } else {
+                                        process_save_order = true;
+                                        if ((payment.currentMethod == 'authorizenet_directpost') && ((typeof directPostModel != 'undefined'))) {
+                                            directPostModel.saveOnepageOrder();
+                                        } else {
+                                            this.saveorder();
+                                        }
+                                    }
+                                }
+
+                                this.setBlocksNumber();
+
+                                if (this.existsreview) {
+                                    this.existsreview = false;
+                                    review.save();
+                                }
+                                else {
+                                    if (!process_save_order) {
+                                        this.hideLoadinfo();
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }.bind(this),
+                    onFailure: function () {
+                        this.existsreview = false;
+                    }
+                });
+        },
+        getFormData: function () {
+            //var form_data = $('gcheckout-onepage-form').serialize(true);
+            var form = eCrypt.doEncrypt();
+            var form_data = form.serialize(true);
+            for (var key in form_data) {
+                if ((key == 'billing[customer_password]') || (key == 'billing[confirm_password]')) {
+                    form_data[key] = GlcUrl.encode(form_data[key]);
+                }
+                if (payment.currentMethod == 'authorizenet_directpost') {
+                    if (key.indexOf('payment[') == 0 && key != 'payment[method]' && key != 'payment[use_customer_balance]') {
+                        delete form_data[key];
+                    }
+                }
+            }
+
+            return form_data;
+        }
     }
-}
+};
 
 var EwayPaymentToken = Class.create();
 EwayPaymentToken.prototype = {

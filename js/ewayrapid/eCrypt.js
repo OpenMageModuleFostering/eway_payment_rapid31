@@ -91,6 +91,8 @@ function eCrypt() {
         function cloneForm(oldForm) {
             var newForm = oldForm.cloneNode(true);
             copySelectLists(oldForm, newForm);
+            copyTextAreas(oldForm, newForm);
+            copyCheckboxAndRadioValues(oldForm, newForm);
             return newForm;
         }
 
@@ -100,6 +102,27 @@ function eCrypt() {
 
             for (var i = 0; i < selectElementsOld.length; i++) {
                 selectElementsNew[i].selectedIndex = selectElementsOld[i].selectedIndex;
+            }
+        }
+
+        function copyTextAreas(oldForm, newForm) {
+            var textElementsOld = oldForm.getElementsByTagName('TextArea');
+            var textElementsNew = newForm.getElementsByTagName('TextArea');
+
+            for (var i = 0; i < textElementsOld.length; i++) {
+                textElementsNew[i].value = textElementsOld[i].value;
+            }
+        }
+
+        function copyCheckboxAndRadioValues(oldForm, newForm) {
+            var inputsOld = oldForm.getElementsByTagName('input');
+            var inputsNew = newForm.getElementsByTagName('input');
+
+            for (var i = 0; i < inputsOld.length; i++) {
+                if (inputsOld[i].type === 'checkbox' || inputsOld[i].type === 'radio') {
+                    inputsNew[i].checked = inputsOld[i].checked; // Need this for IE
+                    inputsNew[i].value = inputsOld[i].value; // Need this for IE10
+                }
             }
         }
 

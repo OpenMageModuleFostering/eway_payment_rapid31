@@ -34,15 +34,15 @@ $_code = $this->getMethodCode()
             <div class="v-fix">
                 <select id="ewayrapid_saved_token" name="payment[saved_token]" class="ewayrapid_saved_token">
                     <?php
-                    $_tokens = $this->getTokenList();
-                    $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
+                        $_tokens = $this->getTokenList();
+                        $_defaultToken = isset($_tokens['default_token']) ? $_tokens['default_token'] : false;
                     ?>
                     <?php foreach($_tokens['tokens'] as $_key => $_token):
                         if ($_key == Eway_Rapid31_Model_Config::TOKEN_NEW || $this->checkCardName($_token) == Eway_Rapid31_Model_Config::CREDITCARD_METHOD): ?>
-                            <?php /* @var Eway_Rapid31_Model_Customer_Token $_token */ ?>
-                            <option value="<?php echo $_key ?>" <?php if($_key == $_defaultToken): ?>selected="selected"<?php endif; ?>>
-                                <?php echo $_token->getCard() ?>
-                            </option>
+                        <?php /* @var Eway_Rapid31_Model_Customer_Token $_token */ ?>
+                        <option value="<?php echo $_key ?>" <?php if($_key == $_defaultToken): ?>selected="selected"<?php endif; ?>>
+                            <?php echo $_token->getCard() ?>
+                        </option>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </select>
@@ -78,42 +78,42 @@ $_code = $this->getMethodCode()
         <div class="input-box">
             <div class="v-fix">
                 <select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month validate-cc-exp required-entry">
-                    <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
-                    <?php foreach ($this->getCcMonths() as $k=>$v): ?>
-                        <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
-                    <?php endforeach ?>
+                <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
+                <?php foreach ($this->getCcMonths() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
                 </select>
             </div>
             <div class="v-fix">
                 <?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>
                 <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry">
-                    <?php foreach ($this->getCcYears() as $k=>$v): ?>
-                        <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
-                    <?php endforeach ?>
+                <?php foreach ($this->getCcYears() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
                 </select>
             </div>
         </div>
     </li>
     <?php echo $this->getChildHtml() ?>
     <?php if($this->hasVerification()): ?>
-        <li id="<?php echo $_code ?>_cc_type_cvv_div">
-            <label for="<?php echo $_code ?>_cc_cid" class="required"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
-            <div class="input-box">
-                <div class="v-fix">
-                    <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="input-text cvv required-entry validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" data-eway-encrypt-name="payment[cc_cid]" value="" pattern="\d*"/>
-                </div>
-                <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+    <li id="<?php echo $_code ?>_cc_type_cvv_div">
+        <label for="<?php echo $_code ?>_cc_cid" class="required"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
+        <div class="input-box">
+            <div class="v-fix">
+                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="input-text cvv required-entry validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" data-eway-encrypt-name="payment[cc_cid]" value="" pattern="\d*"/>
             </div>
-        </li>
-        <?php if ($this->getIsRecurring()) { ?>
-            <li>
-                <p>I authorize <?php echo Mage::app()->getStore()->getName(); ?> to charge the available balance
-                    in my credit card for the future payments of this order. To make a change, I can go to
-                    <a href="<?php echo Mage::getUrl('checkout/cart'); ?>">Cart</a>
-                </p>
-                <input type="checkbox" name="recurring-agree" class="recurring-agree required-entry"/><label class="lable-for-recurring" for="">Agree</label>
-            </li>
-        <?php } ?>
+            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+        </div>
+    </li>
+<?php if ($this->getIsRecurring()) { ?>
+    <li>
+        <p>I authorize <?php echo Mage::app()->getStore()->getName(); ?> to charge the available balance
+            in my credit card for the future payments of this order. To make a change, I can go to
+            <a href="<?php echo Mage::getUrl('checkout/cart'); ?>">Cart</a>
+        </p>
+        <input type="checkbox" name="recurring-agree" class="recurring-agree required-entry"/><label class="lable-for-recurring" for="">Agree</label>
+    </li>
+<?php } ?>
     <?php endif; ?>
 </ul>
 
@@ -142,11 +142,21 @@ $_code = $this->getMethodCode()
 
 </script>
 
-<!--[if lt IE 10]>
 <script type="text/javascript">
     $('p_method_ewayrapid_saved').observe('click', function () {
         $('p_method_ewayrapid_saved').setAttribute('checked', 'true');
         $('p_method_ewayrapid_notsaved').removeAttribute('checked');
+
+        $$('#payment_form_ewayrapid_saved input[name*=payment]').each(function(inp) {
+            inp.removeAttribute('disabled');
+        });
+
+        $$('#payment_form_ewayrapid_saved select[name*=payment]').each(function(inp) {
+            inp.removeAttribute('disabled');
+        });
+
+        $$('#payment_form_ewayrapid_saved input[data-eway-encrypt-name*=payment]').each(function(inp) {
+            inp.removeAttribute('disabled');
+        });
     });
 </script>
-<![endif]-->
