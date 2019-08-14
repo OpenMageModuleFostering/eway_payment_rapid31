@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/eWAY_Payment_Rapid31",
+    "type": "magento-module",
+    "license": "OSL-v3.0",
+    "homepage": "",
+    "description": "The eWAY payment module - accept credit card payments, save cards, process refunds with eWAY's Rapid 3.1 Payment Gateway.",
+    "authors": [
+    {
+        "name": "eWAY Payments",
+        "email": "partner@eway.com.au"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

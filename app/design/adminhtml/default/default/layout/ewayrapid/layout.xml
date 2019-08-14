@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <adminhtml_sales_order_create_index>
+        <reference name="head">
+            <action ifconfig="payment/ewayrapid_general/active" method="addJs"><script>ewayrapid/eCrypt.js</script></action>
+            <action ifconfig="payment/ewayrapid_general/active" method="addJs"><script>ewayrapid/ewayrapid.js</script></action>
+        </reference>
+        <reference name="js">
+            <block type="core/template" name="ewayrapid.js" after="-">
+                <action method="setArea"><area>frontend</area></action>
+                <action ifconfig="payment/ewayrapid_general/active" method="setTemplate" >
+                    <template>ewayrapid/js.phtml</template>
+                </action>
+            </block>
+        </reference>
+    </adminhtml_sales_order_create_index>
+</layout>

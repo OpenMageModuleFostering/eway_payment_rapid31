@@ -1,0 +1,85 @@
+<?php $_config = Mage::getSingleton('ewayrapid/config'); ?>
+<?php $_backend = Mage::helper('ewayrapid')->isBackendOrder(); ?>
+<?php $_checkoutExtension = $this->getCheckoutExtension(); ?>
+<?php if($_config->isDirectConnection() || $_backend): ?>
+    <script type="text/javascript">
+        EwayPayment.supportCardTypes = <?php echo json_encode($_config->getSupportedCardTypes()) ?>;
+        <?php if(Mage::helper('ewayrapid')->isBackendOrder()): ?>
+        var ewayPayment = new EwayPayment($('edit_form'), '<?php echo $_config->getEncryptionKey() ?>');
+        AdminOrder.prototype.submit = ewayPayment.submitAdminOrder;
+        <?php else: ?>
+        <?php switch($_checkoutExtension):
+            case 'OneStepCheckout': // OneStepCheckout extension ?>
+        document.observe("dom:loaded", function() {
+            var ewayPayment = new EwayPayment($('onestepcheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            Payment.prototype.switchMethod = ewayPayment.OneStepCheckout.switchMethod;
+            if(payment.currentMethod) {
+                payment.switchMethod(payment.currentMethod);
+            }
+            $('onestepcheckout-form').submit = function() {
+                form = eCrypt.doEncrypt();
+                form.submit();
+            };
+        });
+        <?php break; ?>
+        <?php case 'FireCheckout': // FireCheckout extension ?>
+        document.observe("dom:loaded", function() {
+            var ewayPayment = new EwayPayment($('firecheckout-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if(typeof FireCheckout.prototype.ewayOldSave == "undefined") {
+                FireCheckout.prototype.ewayOldSave = FireCheckout.prototype.save;
+                FireCheckout.prototype.save = ewayPayment.FireCheckout.save;
+            }
+        });
+        <?php break; ?>
+        <?php case 'IWDOnePageCheckout': // FireCheckout extension ?>
+        document.observe("dom:loaded", function() {
+            var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
+            if(typeof IWD.OPC.ewayOldSavePayment == "undefined") {
+                IWD.OPC.ewayOldSavePayment = IWD.OPC.savePayment;
+                IWD.OPC.ewayOldSaveOrder = IWD.OPC.saveOrder;
+                IWD.OPC.savePayment = ewayPayment.IWDOnePageCheckout.savePayment;
+                IWD.OPC.saveOrder = ewayPayment.IWDOnePageCheckout.saveOrder;
+            }
+        });
+        <?php break; ?>
+        <?php case 'MultiShippingAddress': // Magento default multi shipping address ?>
+        var ewayPayment = new EwayPayment($('multishipping-billing-form'), '<?php echo $_config->getEncryptionKey() ?>');
+        <?php break; ?>
+        <?php default: // Magento default one page checkout ?>
+        var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
+        Payment.prototype.save = ewayPayment.savePaymentWithEncryption;
+        Review.prototype.save = ewayPayment.saveReviewWithEncryption;
+        <?php endswitch; ?>
+        <?php endif; ?>
+    </script>
+<?php endif; ?>
+
+<?php if($_config->isTransparentConnection() && !$_backend): ?>
+    <script type="text/javascript">
+        var creditcard = '<?php echo Eway_Rapid31_Model_Config::CREDITCARD_METHOD ?>';
+        var ewayPayment = new EwayPayment($('co-payment-form'), '<?php echo $_config->getEncryptionKey() ?>');
+        Payment.prototype.save = ewayPayment.savePaymentWithTransEncryption;
+        Review.prototype.save = function() {
+            $('review-please-wait').show();
+            $('review-buttons-container').down('button').hide();
+            var request = new Ajax.Request(
+                '<?php echo Mage::getUrl('ewayrapid/transparent/build'); ?>',
+                {
+                    method:'post',
+                    onComplete: {
+
+                    },
+                    onSuccess: function(response) {
+                        if(response.responseText != '0') {
+                            window.location = response.responseText;
+                        }
+                        return false;
+                    },
+                    onFailure: {
+
+                    }
+                }
+            );
+        }
+    </script>
+<?php endif; ?>
